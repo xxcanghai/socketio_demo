@@ -1,2 +1,25 @@
-# socketio_demo
-socket.IO Demo
+# socket.IO Demo
+这是一个使用Nodejs搭建的最简单的socketIO库的Demo。
+
+
+# 服务器启动方法
+在项目目录下，执行以下命令即可。
+
+```
+node ./bin/www
+```
+
+
+# 客户端启动方法
+客户端项目所有代码均在 `./public` 目录下。
+
+可本地启动以 `./public` 目录的web服务器，或直接用浏览器打开 `./public/view/index.html` 文件，即可
+
+
+# 服务器地址修改
+在 `./public/js/index` 中，可修改服务器地址。
+
+
+# 实现功能
+所有客户端网页打开后自动连接服务器，并发送当前时间戳。
+服务器将任何人发送到服务器的数据，全部广播给所有客户端。
