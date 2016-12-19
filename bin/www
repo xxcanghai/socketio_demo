@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('chatroom:server');
 var http = require('http');
-var chatroom = require('../helpers/chatroom.io');
+var phoneGlasses = require('../helpers/phoneGlasses');
 
 /**
  * Get port from environment and store in Express.
@@ -23,7 +23,7 @@ app.set('port', port);
 var server = http.createServer(app);
 
 //初始化聊天室
-chatroom(server);
+phoneGlasses(server);
 
 /**
  * Listen on provided port, on all network interfaces.
