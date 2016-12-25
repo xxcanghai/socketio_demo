@@ -1,0 +1,45 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>眼镜端</title>
+
+
+    <script src="../js/lib/socket.io.js"></script>
+    <script src="../js/lib/jquery-1.12.3.js"></script>
+    <script src="../js/lib/vue.js"></script>
+    <script src="../js/lib/pg.js"></script>
+    <script src="../js/glasses.js"></script>
+
+</head>
+
+<body id="glasses">
+    <h1>眼镜端 {{isLogin ? glassesid : ''}}</h1>
+    <div v-show="!isLogin">
+        当前眼镜ID: <input type="text" v-model="glassesid">
+        <input type="button" value="登录" @click="emitLogin"><br><br>
+        <hr>
+    </div>
+    <div v-show="isLogin">
+        发消息给手机ID: <input type="text" v-model="phoneid"><br>
+        消息内容：<input type="text" v-model="sendmsg"><br>
+        <input type="button" value="发送" @click="emitSendToPhone">
+        <hr>
+        <div>
+            <div v-for="m in msgArr">
+                <span>{{m.pid}}</span>: 
+                <span>{{m.data}}</span>
+            </div>
+        </div>
+        <hr>
+        获取手机ID列表：<input type="text" v-model="pids">
+        <input type="button" value="获取并更新列表" @click="emitGetPhoneList">
+        <div>
+            <div v-for="p in pArr">
+                <span>{{p.pid}}</span>
+                <span>{{p.is_online?'在线':'离线'}}</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

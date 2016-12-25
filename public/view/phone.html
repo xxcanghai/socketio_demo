@@ -2,18 +2,45 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>socketIO demo</title>
+    <title>手机端</title>
 
 
     <script src="../js/lib/socket.io.js"></script>
     <script src="../js/lib/jquery-1.12.3.js"></script>
+    <script src="../js/lib/vue.js"></script>
     <script src="../js/lib/pg.js"></script>
     <script src="../js/phone.js"></script>
 
 </head>
 
-<body>
-    <h1>手机端</h1>
-    请查看控制台
+<body id="phone">
+    <h1>手机端 {{isLogin ? phoneid : ''}}</h1>
+    <div v-show="!isLogin">
+        当前手机ID: <input type="text" v-model="phoneid">
+        <input type="button" value="登录" @click="emitLogin"><br><br>
+        <hr>
+    </div>
+
+    <div v-show="isLogin">
+        要发送消息给眼镜ID: <input type="text" v-model="glassesid"><br>
+        发送消息内容：<input type="text" v-model="sendmsg"><br>
+        <input type="button" value="发送" @click="emitSendToGlasses">
+        <hr>
+        <div>
+            <div v-for="m in msgArr">
+                <span>{{m.gid}}</span>: 
+                <span>{{m.data}}</span>
+            </div>
+        </div>
+        <hr>
+        获取眼镜ID列表：<input type="text" v-model="gids">
+        <input type="button" value="获取并更新列表" @click="emitGetGlassesList">
+        <div>
+            <div v-for="g in gArr">
+                <span>{{g.gid}}</span>
+                <span>{{g.is_online?'在线':'离线'}}</span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

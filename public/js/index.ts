@@ -1,6 +1,6 @@
 $(function () {
     /** 服务器地址 */
-    var serverUrl = "http://192.168.0.106:3000";
+    var serverUrl = "http://localhost:3000";
     var server: SocketIOClient.Socket = io(serverUrl, {});
 
     //要发送的数据
