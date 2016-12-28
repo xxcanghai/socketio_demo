@@ -5,8 +5,14 @@ $(function () {
             pid: vm.phoneid
         };
         server.emit("phoneEmitLogin", data, function (d) {
-            vm.isLogin = true;
-            console.log("手机登录成功");
+            console.log("phoneEmitLogin事件的ACK函数返回值：", d);
+            if (d.code == 0) {
+                vm.isLogin = true;
+                console.log("手机登录成功");
+            }
+            else {
+                alert(d.msg);
+            }
         });
     }
     function emitSendToGlasses() {
@@ -30,6 +36,7 @@ $(function () {
             vm.msgArr.push(d);
         });
         server.on("serverEmitGlassesList", function (d) {
+            console.log("服务器返回眼镜列表：", JSON.stringify(d));
             vm.gArr = d;
         });
     }

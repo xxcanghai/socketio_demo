@@ -1,5 +1,6 @@
 import * as  socketio from 'socket.io';
 import * as  _ from 'underscore';
+import * as tool from './tool';
 
 export = function (httpServer) {
 
@@ -59,15 +60,16 @@ export = function (httpServer) {
              * 
              * @param {any} d
              */
-            phoneEmitLogin(d: pg.phoneEmitLoginData, ack: (ackData: pg.serverBase<pg.phoneEmitLoginACK>) => void) {
+            phoneEmitLogin(d: pg.phoneEmitLoginData, ack: (ackData: pg.serverBase<pg.phoneEmitLoginACK>) => void): void {
                 var pclient: pg.phoneClient = <pg.phoneClient>client;
                 pclient.pid = d.pid;
                 pclient.type = "phone";
                 if (getPhoneClient(d.pid) == undefined) {
                     phoneClientArr.push(pclient);
+                    return successACK(ack);
+                } else {
+                    return failACK(ack, tool.stringFormat("登录失败,pid({0})已存在", d.pid));
                 }
-                //------
-                successACK(ack);
             },
 
             /**
@@ -82,10 +84,11 @@ export = function (httpServer) {
                     emit.serverEmitSendToGlasses(gclient, {
                         pid: pclient.pid,
                         data: d.data
-                    }, noop);
+                    });
+                    return successACK(ack);
+                } else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,gid({0})不存在", d.gid));
                 }
-                //------
-                successACK(ack);
             },
 
             /**
@@ -99,7 +102,7 @@ export = function (httpServer) {
                 //todo 调用PHP接口
 
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
 
 
@@ -117,12 +120,11 @@ export = function (httpServer) {
                 gclient.gid = d.gid;
                 if (getGlassesClient(d.gid) == undefined) {
                     glassesClientArr.push(gclient);
+                    //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
+                    return successACK(ack);
+                } else {
+                    return failACK(ack, tool.stringFormat("登录失败,gid({0})已存在", d.gid));
                 }
-                //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
-
-
-                //--------
-                successACK(ack);
             },
 
             /**
@@ -137,10 +139,11 @@ export = function (httpServer) {
                     emit.serverEmitSendToPhone(pclient, {
                         gid: gclient.gid,
                         data: d.data
-                    }, noop);
+                    });
+                    return successACK(ack);
+                } else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,pid({0})不存在", d.pid));
                 }
-                //--------
-                successACK(ack);
             },
 
             /**
@@ -154,7 +157,7 @@ export = function (httpServer) {
                 //todo 调用PHP接口
 
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
 
             /**
@@ -165,9 +168,9 @@ export = function (httpServer) {
              */
             clientEmitGetPhoneList(d: pg.clientEmitGetPhoneListData, ack: (ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void) {
                 var arr: pg.serverEmitPhoneListData = d.pids.map(pid => createPhoneListItem(pid, getIsPhoneOnline(pid)));
-                emit.serverEmitPhoneList(client, arr, noop);
+                emit.serverEmitPhoneList(client, arr);
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
 
             /**
@@ -178,9 +181,9 @@ export = function (httpServer) {
              */
             clientEmitGetGlassesList(d: pg.clientEmitGetGlassesListData, ack: (ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void) {
                 var arr: pg.serverEmitGlassesListData = d.gids.map(gid => createGlassesListItem(gid, getIsGlassesOnline(gid)));
-                emit.serverEmitGlassesList(client, arr, noop);
+                emit.serverEmitGlassesList(client, arr);
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
         }
 
@@ -193,7 +196,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitSendToGlassesData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
              */
-            serverEmitSendToGlasses(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void) { },
+            serverEmitSendToGlasses(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void = noop) { },
 
             /**
              * 服务器发出给手机的消息
@@ -202,7 +205,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitSendToPhone(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void) { },
+            serverEmitSendToPhone(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
 
             /**
              * 服务器发出手机列表数据
@@ -211,7 +214,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitPhoneListData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitPhoneListACK>) => void} ack
              */
-            serverEmitPhoneList(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitPhoneListData, ack: (ackData: pg.serverBase<pg.serverEmitPhoneListACK>) => void) { },
+            serverEmitPhoneList(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitPhoneListData, ack: (ackData?: pg.serverBase<pg.serverEmitPhoneListACK>) => void = noop) { },
 
             /**
              * 服务器发出眼镜列表数据
@@ -220,23 +223,34 @@ export = function (httpServer) {
              * @param {pg.serverEmitGlassesListData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitGlassesListACK>) => void} ack
              */
-            serverEmitGlassesList(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitGlassesListData, ack: (ackData: pg.serverBase<pg.serverEmitGlassesListACK>) => void) { },
+            serverEmitGlassesList(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitGlassesListData, ack: (ackData?: pg.serverBase<pg.serverEmitGlassesListACK>) => void = noop) { },
         }
 
 
         /**
-         * 给客户端调用ack函数
+         * 给客户端调用成功的ack函数
          * 
          * @param {Function} ack
          */
-        function successACK(ack: Function, ackData: any = null) {
-            if (typeof ack == "function") {
-                if (ackData == null) {
-                    ack(createServerBaseSuccess());
-                } else {
-                    ack(ackData);
-                }
+        function successACK(ack: Function, ackData: any = null): void {
+            if (typeof ack !== "function") return;
+            if (ackData == null) {
+                return ack(createServerBaseSuccess());
+            } else {
+                return ack(ackData);
             }
+        }
+
+        /**
+         * 给客户端调用失败的ack函数
+         * 
+         * @param {Function} ack ack函数
+         * @param {string} message 错误信息
+         * @param {number} code 错误码,默认-1
+         */
+        function failACK(ack: Function, message: string = "", code: number = -1): void {
+            if (typeof ack !== "function") return;
+            return ack(createServerBaseFail(message, code));
         }
 
         //=============
@@ -292,8 +306,8 @@ export = function (httpServer) {
         return createServerBase(0, "成功", data);
     }
 
-    function createServerBaseFail(failMess: string = "失败") {
-        return createServerBase(-1, failMess, null);
+    function createServerBaseFail(failMess: string = "失败", code: number = -1) {
+        return createServerBase(code, failMess, null);
     }
 
     /**

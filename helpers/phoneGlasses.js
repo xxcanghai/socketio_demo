@@ -1,5 +1,6 @@
 "use strict";
 var socketio = require('socket.io');
+var tool = require('./tool');
 module.exports = function (httpServer) {
     /** socketio服务器 */
     var server = socketio(httpServer);
@@ -42,9 +43,11 @@ module.exports = function (httpServer) {
                 pclient.type = "phone";
                 if (getPhoneClient(d.pid) == undefined) {
                     phoneClientArr.push(pclient);
+                    return successACK(ack);
                 }
-                //------
-                successACK(ack);
+                else {
+                    return failACK(ack, tool.stringFormat("登录失败,pid({0})已存在", d.pid));
+                }
             },
             /**
              * 手机发送消息给眼镜
@@ -58,10 +61,12 @@ module.exports = function (httpServer) {
                     emit.serverEmitSendToGlasses(gclient, {
                         pid: pclient.pid,
                         data: d.data
-                    }, noop);
+                    });
+                    return successACK(ack);
                 }
-                //------
-                successACK(ack);
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,gid({0})不存在", d.gid));
+                }
             },
             /**
              * 手机要关联指定眼镜
@@ -73,7 +78,7 @@ module.exports = function (httpServer) {
                 var pclient = client;
                 //todo 调用PHP接口
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
             //--------------眼镜事件--------------
             /**
@@ -87,10 +92,12 @@ module.exports = function (httpServer) {
                 gclient.gid = d.gid;
                 if (getGlassesClient(d.gid) == undefined) {
                     glassesClientArr.push(gclient);
+                    //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
+                    return successACK(ack);
                 }
-                //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
-                //--------
-                successACK(ack);
+                else {
+                    return failACK(ack, tool.stringFormat("登录失败,gid({0})已存在", d.gid));
+                }
             },
             /**
              * 眼镜发送消息给手机
@@ -104,10 +111,12 @@ module.exports = function (httpServer) {
                     emit.serverEmitSendToPhone(pclient, {
                         gid: gclient.gid,
                         data: d.data
-                    }, noop);
+                    });
+                    return successACK(ack);
                 }
-                //--------
-                successACK(ack);
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,pid({0})不存在", d.pid));
+                }
             },
             /**
              * 眼镜要关联指定手机ID
@@ -119,7 +128,7 @@ module.exports = function (httpServer) {
                 var gclient = client;
                 //todo 调用PHP接口
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
             /**
              * 客户端要获取指定手机ID数组的手机对象列表
@@ -129,9 +138,9 @@ module.exports = function (httpServer) {
              */
             clientEmitGetPhoneList: function (d, ack) {
                 var arr = d.pids.map(function (pid) { return createPhoneListItem(pid, getIsPhoneOnline(pid)); });
-                emit.serverEmitPhoneList(client, arr, noop);
+                emit.serverEmitPhoneList(client, arr);
                 //----------
-                successACK(ack);
+                return successACK(ack);
             },
             /**
              * 客户端要获取指定眼镜ID数组的眼镜对象列表
@@ -141,9 +150,9 @@ module.exports = function (httpServer) {
              */
             clientEmitGetGlassesList: function (d, ack) {
                 var arr = d.gids.map(function (gid) { return createGlassesListItem(gid, getIsGlassesOnline(gid)); });
-                emit.serverEmitGlassesList(client, arr, noop);
+                emit.serverEmitGlassesList(client, arr);
                 //----------
-                successACK(ack);
+                return successACK(ack);
             }
         };
         /** 所有服务器发出的事件集合 */
@@ -155,7 +164,9 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitSendToGlassesData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
              */
-            serverEmitSendToGlasses: function (socket, d, ack) { },
+            serverEmitSendToGlasses: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
             /**
              * 服务器发出给手机的消息
              *
@@ -163,7 +174,9 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitSendToPhone: function (socket, d, ack) { },
+            serverEmitSendToPhone: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
             /**
              * 服务器发出手机列表数据
              *
@@ -171,7 +184,9 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitPhoneListData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitPhoneListACK>) => void} ack
              */
-            serverEmitPhoneList: function (socket, d, ack) { },
+            serverEmitPhoneList: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
             /**
              * 服务器发出眼镜列表数据
              *
@@ -179,23 +194,39 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitGlassesListData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitGlassesListACK>) => void} ack
              */
-            serverEmitGlassesList: function (socket, d, ack) { }
+            serverEmitGlassesList: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            }
         };
         /**
-         * 给客户端调用ack函数
+         * 给客户端调用成功的ack函数
          *
          * @param {Function} ack
          */
         function successACK(ack, ackData) {
             if (ackData === void 0) { ackData = null; }
-            if (typeof ack == "function") {
-                if (ackData == null) {
-                    ack(createServerBaseSuccess());
-                }
-                else {
-                    ack(ackData);
-                }
+            if (typeof ack !== "function")
+                return;
+            if (ackData == null) {
+                return ack(createServerBaseSuccess());
             }
+            else {
+                return ack(ackData);
+            }
+        }
+        /**
+         * 给客户端调用失败的ack函数
+         *
+         * @param {Function} ack ack函数
+         * @param {string} message 错误信息
+         * @param {number} code 错误码,默认-1
+         */
+        function failACK(ack, message, code) {
+            if (message === void 0) { message = ""; }
+            if (code === void 0) { code = -1; }
+            if (typeof ack !== "function")
+                return;
+            return ack(createServerBaseFail(message, code));
         }
         //=============
         //循环创建监听
@@ -251,9 +282,10 @@ module.exports = function (httpServer) {
         if (data === void 0) { data = null; }
         return createServerBase(0, "成功", data);
     }
-    function createServerBaseFail(failMess) {
+    function createServerBaseFail(failMess, code) {
         if (failMess === void 0) { failMess = "失败"; }
-        return createServerBase(-1, failMess, null);
+        if (code === void 0) { code = -1; }
+        return createServerBase(code, failMess, null);
     }
     /**
      * 返回指定眼镜ID的眼镜client连接
