@@ -20,13 +20,21 @@ $(function () {
             gid: vm.glassesid,
             data: vm.sendmsg
         };
-        server.emit("phoneEmitSendToGlasses", data);
+        server.emit("phoneEmitSendToGlasses", data, function (d) {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
     function emitGetGlassesList() {
         var data = {
             gids: vm.gids.split(",")
         };
-        server.emit("clientEmitGetGlassesList", data);
+        server.emit("clientEmitGetGlassesList", data, function (d) {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
     function listen() {
         server.on("disconnect", function () {

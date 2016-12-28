@@ -7,8 +7,12 @@ $(function () {
             gid: vm.glassesid,
         };
         server.emit("glassesEmitLogin", data, function (d) {
-            vm.isLogin = true;
-            console.log("眼镜登录成功");
+            if (d.code != 0) {
+                alert(d.msg);
+            } else {
+                vm.isLogin = true;
+                console.log("眼镜登录成功");
+            }
         });
     }
 
@@ -17,14 +21,22 @@ $(function () {
             pid: vm.phoneid,
             data: vm.sendmsg
         };
-        server.emit("glassesEmitSendToPhone", data);
+        server.emit("glassesEmitSendToPhone", data, d => {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
 
     function emitGetPhoneList() {
         var data: pg.clientEmitGetPhoneListData = {
             pids: vm.pids.split(",")
         };
-        server.emit("clientEmitGetPhoneList", data);
+        server.emit("clientEmitGetPhoneList", data, d => {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
 
     function listen() {

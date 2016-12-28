@@ -68,7 +68,7 @@ export = function (httpServer) {
                     phoneClientArr.push(pclient);
                     return successACK(ack);
                 } else {
-                    return failACK(ack, tool.stringFormat("登录失败,pid({0})已存在", d.pid));
+                    return failACK(ack, tool.stringFormat("登录失败,手机ID({0})已存在", d.pid));
                 }
             },
 
@@ -87,7 +87,7 @@ export = function (httpServer) {
                     });
                     return successACK(ack);
                 } else {
-                    return failACK(ack, tool.stringFormat("发送消息失败,gid({0})不存在", d.gid));
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
                 }
             },
 
@@ -123,7 +123,7 @@ export = function (httpServer) {
                     //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
                     return successACK(ack);
                 } else {
-                    return failACK(ack, tool.stringFormat("登录失败,gid({0})已存在", d.gid));
+                    return failACK(ack, tool.stringFormat("登录失败,眼镜ID({0})已存在", d.gid));
                 }
             },
 
@@ -142,7 +142,7 @@ export = function (httpServer) {
                     });
                     return successACK(ack);
                 } else {
-                    return failACK(ack, tool.stringFormat("发送消息失败,pid({0})不存在", d.pid));
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
                 }
             },
 

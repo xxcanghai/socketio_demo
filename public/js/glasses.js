@@ -5,8 +5,13 @@ $(function () {
             gid: vm.glassesid
         };
         server.emit("glassesEmitLogin", data, function (d) {
-            vm.isLogin = true;
-            console.log("眼镜登录成功");
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+            else {
+                vm.isLogin = true;
+                console.log("眼镜登录成功");
+            }
         });
     }
     function emitSendToPhone() {
@@ -14,13 +19,21 @@ $(function () {
             pid: vm.phoneid,
             data: vm.sendmsg
         };
-        server.emit("glassesEmitSendToPhone", data);
+        server.emit("glassesEmitSendToPhone", data, function (d) {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
     function emitGetPhoneList() {
         var data = {
             pids: vm.pids.split(",")
         };
-        server.emit("clientEmitGetPhoneList", data);
+        server.emit("clientEmitGetPhoneList", data, function (d) {
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
     }
     function listen() {
         server.on("disconnect", function () {

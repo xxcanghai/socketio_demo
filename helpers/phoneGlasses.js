@@ -46,7 +46,7 @@ module.exports = function (httpServer) {
                     return successACK(ack);
                 }
                 else {
-                    return failACK(ack, tool.stringFormat("登录失败,pid({0})已存在", d.pid));
+                    return failACK(ack, tool.stringFormat("登录失败,手机ID({0})已存在", d.pid));
                 }
             },
             /**
@@ -65,7 +65,7 @@ module.exports = function (httpServer) {
                     return successACK(ack);
                 }
                 else {
-                    return failACK(ack, tool.stringFormat("发送消息失败,gid({0})不存在", d.gid));
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
                 }
             },
             /**
@@ -96,7 +96,7 @@ module.exports = function (httpServer) {
                     return successACK(ack);
                 }
                 else {
-                    return failACK(ack, tool.stringFormat("登录失败,gid({0})已存在", d.gid));
+                    return failACK(ack, tool.stringFormat("登录失败,眼镜ID({0})已存在", d.gid));
                 }
             },
             /**
@@ -115,7 +115,7 @@ module.exports = function (httpServer) {
                     return successACK(ack);
                 }
                 else {
-                    return failACK(ack, tool.stringFormat("发送消息失败,pid({0})不存在", d.pid));
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
                 }
             },
             /**
