@@ -32,7 +32,19 @@ phoneGlasses(server);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+process.on('uncaughtException', onUncaughtException);
 console.log("启动服务成功,端口：" + port);
+
+
+/**
+ * 捕获所有未捕获的异常
+ * 
+ * @param err (description)
+ */
+function onUncaughtException(err) {
+    // console.error('Error caught in uncaughtException event:', err);
+    console.error('Error 未捕获的异常:', err);
+}
 
 /**
  * Normalize a port into a number, string, or false.

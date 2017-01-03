@@ -24,6 +24,7 @@
         发消息给手机ID: <input type="text" v-model="phoneid"><br>
         消息内容：<input type="text" v-model="sendmsg"><br>
         <input type="button" value="发送" @click="emitSendToPhone">
+        <input type="button" value="绑定此手机" @click="emitBindPhone">
         <hr>
         <div>
             <div v-for="m in msgArr">

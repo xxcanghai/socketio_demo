@@ -5,6 +5,7 @@ $(function () {
     function emitLogin() {
         var data: pg.phoneEmitLoginData = {
             pid: vm.phoneid,
+            name: "手机"
         };
         server.emit("phoneEmitLogin", data, function (d) {
             console.log("phoneEmitLogin事件的ACK函数返回值：", d);
@@ -40,6 +41,18 @@ $(function () {
         });
     }
 
+    function emitBindGlasses() {
+        var data: pg.phoneEmitBindGlassesData = {
+            gid: vm.glassesid
+        };
+        server.emit("phoneEmitBindGlasses", data, d => {
+            console.log(d);
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
+    }
+
     function listen() {
         server.on("disconnect", function () {
             vm.isLogin = false;
@@ -68,7 +81,8 @@ $(function () {
     var vmMethod = {
         emitLogin: emitLogin,
         emitSendToGlasses: emitSendToGlasses,
-        emitGetGlassesList: emitGetGlassesList
+        emitGetGlassesList: emitGetGlassesList,
+        emitBindGlasses: emitBindGlasses
     };
     vm = <any>new Vue({
         el: "#phone",

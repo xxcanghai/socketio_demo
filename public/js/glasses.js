@@ -2,7 +2,8 @@ $(function () {
     var server = io(pgweb.socketServerUrl, {});
     function emitLogin() {
         var data = {
-            gid: vm.glassesid
+            gid: vm.glassesid,
+            name: "眼镜"
         };
         server.emit("glassesEmitLogin", data, function (d) {
             if (d.code != 0) {
@@ -35,6 +36,17 @@ $(function () {
             }
         });
     }
+    function emitBindPhone() {
+        var data = {
+            pid: vm.phoneid
+        };
+        server.emit("glassesEmitBindPhone", data, function (d) {
+            console.log(d);
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
+    }
     function listen() {
         server.on("disconnect", function () {
             vm.isLogin = false;
@@ -60,7 +72,8 @@ $(function () {
     var vmMethod = {
         emitLogin: emitLogin,
         emitSendToPhone: emitSendToPhone,
-        emitGetPhoneList: emitGetPhoneList
+        emitGetPhoneList: emitGetPhoneList,
+        emitBindPhone: emitBindPhone
     };
     vm = new Vue({
         el: "#glasses",

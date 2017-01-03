@@ -5,6 +5,7 @@ $(function () {
     function emitLogin() {
         var data: pg.glassesEmitLoginData = {
             gid: vm.glassesid,
+            name: "眼镜"
         };
         server.emit("glassesEmitLogin", data, function (d) {
             if (d.code != 0) {
@@ -39,6 +40,18 @@ $(function () {
         });
     }
 
+    function emitBindPhone() {
+        var data: pg.glassesEmitBindPhoneData = {
+            pid: vm.phoneid
+        };
+        server.emit("glassesEmitBindPhone", data, d => {
+            console.log(d);
+            if (d.code != 0) {
+                alert(d.msg);
+            }
+        });
+    }
+
     function listen() {
         server.on("disconnect", function () {
             vm.isLogin = false;
@@ -65,7 +78,8 @@ $(function () {
     var vmMethod = {
         emitLogin: emitLogin,
         emitSendToPhone: emitSendToPhone,
-        emitGetPhoneList: emitGetPhoneList
+        emitGetPhoneList: emitGetPhoneList,
+        emitBindPhone: emitBindPhone
     };
     vm = <any>new Vue({
         el: "#glasses",

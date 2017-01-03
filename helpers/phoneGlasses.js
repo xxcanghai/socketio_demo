@@ -1,10 +1,13 @@
 "use strict";
 var socketio = require('socket.io');
 var tool = require('./tool');
+var php = require('./phpHelper');
 module.exports = function (httpServer) {
     /** socketio服务器 */
     var server = socketio(httpServer);
+    /** 所有手机socket列表 */
     var phoneClientArr = [];
+    /** 所有眼镜socket列表 */
     var glassesClientArr = [];
     server.on("connection", function (client) {
         console.log("一个用户连接成功");
@@ -23,12 +26,22 @@ module.exports = function (httpServer) {
                     var pclient = client;
                     // 从手机在线列表中删除
                     phoneClientArr.splice(phoneClientArr.indexOf(pclient), 1);
+                    /** 登记设备在线时长-退出 */
+                    php.onlineTimeLength.emit({
+                        appointed: pclient.pid,
+                        type: 1
+                    });
                 }
                 //如果断开的设备是眼镜
                 if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
                     var gclient = client;
                     //从眼镜在线列表中删除
                     glassesClientArr.splice(glassesClientArr.indexOf(gclient), 1);
+                    /** 登记设备在线时长-退出 */
+                    php.onlineTimeLength.emit({
+                        appointed: gclient.gid,
+                        type: 1
+                    });
                 }
             },
             //--------------手机事件--------------
@@ -41,12 +54,52 @@ module.exports = function (httpServer) {
                 var pclient = client;
                 pclient.pid = d.pid;
                 pclient.type = "phone";
-                if (getPhoneClient(d.pid) == undefined) {
-                    phoneClientArr.push(pclient);
-                    return successACK(ack);
+                pclient.name = d.name;
+                //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息***
+                phpAddPhone();
+                /** 调用PHP新增设备接口 */
+                function phpAddPhone() {
+                    php.Appointed.emit({
+                        appointed: d.pid,
+                        name: d.name
+                    }, function (d) {
+                        if (d.code == 200) {
+                            addPhone();
+                        }
+                        else {
+                            //php服务器操作失败，返回php的ack
+                            phpACK(ack, d);
+                        }
+                    });
                 }
-                else {
-                    return failACK(ack, tool.stringFormat("登录失败,手机ID({0})已存在", d.pid));
+                /** 在Node层新增手机设备 */
+                function addPhone() {
+                    if (getPhoneClient(d.pid) == undefined) {
+                        phoneClientArr.push(pclient);
+                        getGlassesList();
+                        registerOnlineTimeLength();
+                        return successACK(ack);
+                    }
+                    else {
+                        return failACK(ack, tool.stringFormat("登录失败,手机ID({0})已存在", d.pid));
+                    }
+                }
+                /** 获取当前手机关联的眼镜，并向当前手机发送关联的眼镜列表 */
+                function getGlassesList() {
+                    php.deviceBindingList.emit({ appointed: pclient.pid }, function (d) {
+                        if (d.code != 200)
+                            return;
+                        emit.serverEmitGlassesList(pclient, d.res.map(function (o) {
+                            return createGlassesListItem(o.bonded_device, getIsGlassesOnline(o.bonded_device), (getGlassesClient(o.bonded_device) || { name: "" }).name);
+                        }));
+                    });
+                }
+                /** 登记设备在线时长 */
+                function registerOnlineTimeLength() {
+                    php.onlineTimeLength.emit({
+                        appointed: pclient.pid,
+                        type: 0
+                    }, function (d) { });
                 }
             },
             /**
@@ -76,9 +129,12 @@ module.exports = function (httpServer) {
              */
             phoneEmitBindGlasses: function (d, ack) {
                 var pclient = client;
-                //todo 调用PHP接口
-                //----------
-                return successACK(ack);
+                php.deviceBindingLog.emit({
+                    appointed: pclient.pid,
+                    bonded_device: d.gid
+                }, function (d) {
+                    phpACK(ack, d);
+                });
             },
             //--------------眼镜事件--------------
             /**
@@ -90,14 +146,49 @@ module.exports = function (httpServer) {
                 var gclient = client;
                 gclient.type = "glasses";
                 gclient.gid = d.gid;
-                if (getGlassesClient(d.gid) == undefined) {
-                    glassesClientArr.push(gclient);
-                    //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息
-                    return successACK(ack);
+                gclient.name = d.name;
+                /** 调用PHP新增设备接口 */
+                php.Appointed.emit({
+                    appointed: d.gid,
+                    name: d.name
+                }, function (d) {
+                    if (d.code == 200) {
+                        addGlasses();
+                    }
+                    else {
+                        phpACK(ack, d);
+                    }
+                });
+                /** 在Node层新增眼镜设备 */
+                function addGlasses() {
+                    if (getGlassesClient(d.gid) == undefined) {
+                        glassesClientArr.push(gclient);
+                        getPhoneList();
+                        registerOnlineTimeLength();
+                        return successACK(ack);
+                    }
+                    else {
+                        return failACK(ack, tool.stringFormat("登录失败,眼镜ID({0})已存在", d.gid));
+                    }
                 }
-                else {
-                    return failACK(ack, tool.stringFormat("登录失败,眼镜ID({0})已存在", d.gid));
+                /** 获取当前眼镜关联的所有手机，并向当前眼镜发送关联的手机列表 */
+                function getPhoneList() {
+                    php.deviceBindingList.emit({ appointed: gclient.gid }, function (d) {
+                        if (d.code != 200)
+                            return;
+                        emit.serverEmitPhoneList(gclient, d.res.map(function (o) {
+                            return createPhoneListItem(o.bonded_device, getIsPhoneOnline(o.bonded_device), (getPhoneClient(o.bonded_device) || { name: "" }).name);
+                        }));
+                    });
                 }
+                /** 登记设备在线时长 */
+                function registerOnlineTimeLength() {
+                    php.onlineTimeLength.emit({
+                        appointed: gclient.gid,
+                        type: 0
+                    }, function (d) { });
+                }
+                // TODO 获取当前眼镜关联的所有手机.并向其发送当前眼镜已经登录的消息***
             },
             /**
              * 眼镜发送消息给手机
@@ -126,9 +217,12 @@ module.exports = function (httpServer) {
              */
             glassesEmitBindPhone: function (d, ack) {
                 var gclient = client;
-                //todo 调用PHP接口
-                //----------
-                return successACK(ack);
+                php.deviceBindingLog.emit({
+                    appointed: gclient.gid,
+                    bonded_device: d.pid
+                }, function (d) {
+                    phpACK(ack, d);
+                });
             },
             /**
              * 客户端要获取指定手机ID数组的手机对象列表
@@ -137,7 +231,7 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void} ack
              */
             clientEmitGetPhoneList: function (d, ack) {
-                var arr = d.pids.map(function (pid) { return createPhoneListItem(pid, getIsPhoneOnline(pid)); });
+                var arr = d.pids.map(function (pid) { return createPhoneListItem(pid, getIsPhoneOnline(pid), getPhoneClient(pid).name); });
                 emit.serverEmitPhoneList(client, arr);
                 //----------
                 return successACK(ack);
@@ -149,7 +243,7 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void} ack
              */
             clientEmitGetGlassesList: function (d, ack) {
-                var arr = d.gids.map(function (gid) { return createGlassesListItem(gid, getIsGlassesOnline(gid)); });
+                var arr = d.gids.map(function (gid) { return createGlassesListItem(gid, getIsGlassesOnline(gid), getGlassesClient(gid).name); });
                 emit.serverEmitGlassesList(client, arr);
                 //----------
                 return successACK(ack);
@@ -199,6 +293,29 @@ module.exports = function (httpServer) {
             }
         };
         /**
+         * 将PHP接口的返回值给客户端的ack函数
+         *
+         * @param {Function} ack ack函数引用
+         * @param {*} phpData php接口的返回值实体
+         * @returns {void}
+         */
+        function phpACK(ack, phpData) {
+            if (phpData === void 0) { phpData = null; }
+            if (typeof ack !== "function")
+                return;
+            if (phpData == null) {
+                return ack(createServerBase());
+            }
+            else {
+                var code = phpData.code;
+                //php接口的code为200是成功
+                if (code == 200) {
+                    code = 0;
+                }
+                return ack(createServerBase(code, phpData.msg || "", phpData.res));
+            }
+        }
+        /**
          * 给客户端调用成功的ack函数
          *
          * @param {Function} ack
@@ -211,7 +328,7 @@ module.exports = function (httpServer) {
                 return ack(createServerBaseSuccess());
             }
             else {
-                return ack(ackData);
+                return ack(createServerBaseSuccess(ackData));
             }
         }
         /**
@@ -235,7 +352,7 @@ module.exports = function (httpServer) {
             if (typeof logArgs[logArgs.length - 1] == "function") {
                 logArgs[logArgs.length - 1] = "<ACK-Function>";
             }
-            console.info.apply(console, ["on-" + event].concat(logArgs));
+            console.info.apply(console, [">>[on-" + event + "]"].concat(logArgs));
             //--------------
             var args = [].slice.call(arguments);
             return on[event].apply(this, args);
@@ -248,7 +365,7 @@ module.exports = function (httpServer) {
                 if (typeof logArgs[logArgs.length - 1] == "function") {
                     logArgs[logArgs.length - 1] = "<ACK-Function>";
                 }
-                console.info.apply(console, ["emit-" + event].concat(logArgs));
+                console.info.apply(console, [">>[emit-" + event + "]"].concat(logArgs));
                 //-------
                 if (socket instanceof Array) {
                     socket.forEach(function (s) { return s.emit(event, d, ack); });
@@ -352,10 +469,11 @@ module.exports = function (httpServer) {
      * @param {boolean} is_online 是否在线
      * @returns {pg.serverEmitPhoneListItem}
      */
-    function createPhoneListItem(pid, is_online) {
+    function createPhoneListItem(pid, is_online, name) {
         return {
             pid: pid,
-            is_online: is_online
+            is_online: is_online,
+            name: name
         };
     }
     /**
@@ -365,10 +483,11 @@ module.exports = function (httpServer) {
      * @param {boolean} is_online 是否在线
      * @returns {pg.serverEmitGlassesListItem}
      */
-    function createGlassesListItem(gid, is_online) {
+    function createGlassesListItem(gid, is_online, name) {
         return {
             gid: gid,
-            is_online: is_online
+            is_online: is_online,
+            name: name
         };
     }
 };

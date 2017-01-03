@@ -9,6 +9,13 @@ declare namespace pg {
          * @type {"phone" | "glasses"}
          */
         type: "phone" | "glasses";
+
+        /**
+         * 当前的手机名称或眼镜名称
+         * 
+         * @type {string}
+         */
+        name:string;
     }
 
     interface phoneClient extends socketClient {
@@ -81,6 +88,13 @@ declare namespace pg {
          * @type {string}
          */
         pid: string;
+
+        /**
+         * 当前手机名称
+         * 
+         * @type {string}
+         */
+        name: string;
     }
 
     interface phoneEmitLoginACK {
@@ -124,6 +138,13 @@ declare namespace pg {
          * @type {string}
          */
         gid: string;
+
+        /**
+         * 当前眼镜名称
+         * 
+         * @type {string}
+         */
+        name: string;
     }
 
     interface glassesEmitLoginACK {
@@ -259,6 +280,13 @@ declare namespace pg {
          * @type {string}
          */
         pid: string;
+
+        /**
+         * 设备名称
+         * 
+         * @type {string}
+         */
+        name:string;
     }
 
     interface serverEmitPhoneListACK {
@@ -295,6 +323,13 @@ declare namespace pg {
          * @type {string}
          */
         gid: string;
+
+        /**
+         * 设备名称
+         * 
+         * @type {string}
+         */
+        name:string;
     }
 
     interface serverEmitGlassesListACK {

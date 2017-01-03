@@ -25,6 +25,7 @@
         要发送消息给眼镜ID: <input type="text" v-model="glassesid"><br>
         发送消息内容：<input type="text" v-model="sendmsg"><br>
         <input type="button" value="发送" @click="emitSendToGlasses">
+        <input type="button" value="绑定此眼镜" @click="emitBindGlasses">
         <hr>
         <div>
             <div v-for="m in msgArr">
