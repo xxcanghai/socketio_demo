@@ -57,7 +57,7 @@ function createPhpInterface(path, desc, method) {
             }
             catch (ex) {
             }
-            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", data);
+            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", global.unescape(body.replace(/\\u/g, "%u")));
             callback.call(this, data.data_res);
         }
         console.log(">>[phpSend]", obj.desc, reqObj.url, reqObj.form);

@@ -38,6 +38,7 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
     obj.method = method;
     obj.emit = function (data: T, callback: (d: U) => void = noop): request.Request {
         type requestConfig = request.CoreOptions & request.UrlOptions;
+        
 
         var submitData: pg.phpInBase = {
             apiversion: "v.1.0",
@@ -65,7 +66,7 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
             }
             catch (ex) {
             }
-            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", data);
+            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", global.unescape(body.replace(/\\u/g,"%u")));
             callback.call(this, data.data_res);
         }
         console.log(">>[phpSend]", obj.desc, reqObj.url, reqObj.form);
