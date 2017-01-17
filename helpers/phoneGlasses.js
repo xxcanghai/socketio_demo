@@ -31,6 +31,10 @@ module.exports = function (httpServer) {
                         appointed: pclient.pid,
                         type: 1
                     });
+                    php.AppointedTime.emit({
+                        appointed: pclient.pid,
+                        type: 1
+                    });
                 }
                 //如果断开的设备是眼镜
                 if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
@@ -39,6 +43,10 @@ module.exports = function (httpServer) {
                     glassesClientArr.splice(glassesClientArr.indexOf(gclient), 1);
                     /** 登记设备在线时长-退出 */
                     php.onlineTimeLength.emit({
+                        appointed: gclient.gid,
+                        type: 1
+                    });
+                    php.AppointedTime.emit({
                         appointed: gclient.gid,
                         type: 1
                     });
@@ -54,14 +62,12 @@ module.exports = function (httpServer) {
                 var pclient = client;
                 pclient.pid = d.pid;
                 pclient.type = "phone";
-                pclient.name = d.name;
-                //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息***
                 phpAddPhone();
                 /** 调用PHP新增设备接口 */
                 function phpAddPhone() {
-                    php.Appointed.emit({
+                    php.AppointedAdd.emit({
                         appointed: d.pid,
-                        name: d.name
+                        data: d.data
                     }, function (d) {
                         if (d.code == 200) {
                             addPhone();
@@ -90,7 +96,8 @@ module.exports = function (httpServer) {
                         if (d.code != 200)
                             return;
                         emit.serverEmitGlassesList(pclient, d.res.map(function (o) {
-                            return createGlassesListItem(o.bonded_device, getIsGlassesOnline(o.bonded_device), (getGlassesClient(o.bonded_device) || { name: "" }).name);
+                            //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息***
+                            return createGlassesListItem(o.bonded_device, getIsGlassesOnline(o.bonded_device), o.data);
                         }));
                     });
                 }
@@ -136,6 +143,110 @@ module.exports = function (httpServer) {
                     phpACK(ack, d);
                 });
             },
+            /**
+             * 手机加入会议(200001)
+             */
+            phoneEmitMeetingJoin: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                if (gclient) {
+                    emit.serverEmitMeetingJoin(gclient, {
+                        pid: pclient.pid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                }
+            },
+            /**
+             * 手机视频画面切换(200004)
+             */
+            phoneEmitMeetingScreenSwitch: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                if (gclient) {
+                    emit.serverEmitMeetingScreenSwitch(gclient, {
+                        pid: pclient.pid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                }
+            },
+            /**
+             * 手机与眼镜设备解绑(200008)
+             */
+            phoneEmitMeetingUnbind: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                //向php服务器发送解绑消息
+                php.unbind.emit({ appointed: d.gid }, function (d) {
+                    phpACK(ack, d);
+                });
+                // if (gclient) {
+                //     emit.serverEmitMeetingUnbind(gclient, {
+                //         pid: pclient.pid,
+                //         data: d.data
+                //     });
+                // } else {
+                //     return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                // }
+            },
+            /**
+             * 手机直播推流(100001)
+             */
+            phoneEmitLivePush: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                if (gclient) {
+                    emit.serverEmitLivePush(gclient, {
+                        pid: pclient.pid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                }
+            },
+            /**
+             * 手机退出直播(100002)
+             */
+            phoneEmitLiveExit: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                if (gclient) {
+                    emit.serverEmitLiveExit(gclient, {
+                        pid: pclient.pid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                }
+            },
+            /**
+             * 手机设置导播台模式指令(100003)
+             */
+            phoneEmitLiveBroadcast: function (d, ack) {
+                var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                if (gclient) {
+                    emit.serverEmitLiveBroadcast(gclient, {
+                        pid: pclient.pid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定眼镜ID({0})不存在", d.gid));
+                }
+            },
             //--------------眼镜事件--------------
             /**
              * 客户端眼镜登录
@@ -146,11 +257,10 @@ module.exports = function (httpServer) {
                 var gclient = client;
                 gclient.type = "glasses";
                 gclient.gid = d.gid;
-                gclient.name = d.name;
                 /** 调用PHP新增设备接口 */
-                php.Appointed.emit({
+                php.AppointedAdd.emit({
                     appointed: d.gid,
-                    name: d.name
+                    data: d.data
                 }, function (d) {
                     if (d.code == 200) {
                         addGlasses();
@@ -177,7 +287,7 @@ module.exports = function (httpServer) {
                         if (d.code != 200)
                             return;
                         emit.serverEmitPhoneList(gclient, d.res.map(function (o) {
-                            return createPhoneListItem(o.bonded_device, getIsPhoneOnline(o.bonded_device), (getPhoneClient(o.bonded_device) || { name: "" }).name);
+                            return createPhoneListItem(o.bonded_device, getIsPhoneOnline(o.bonded_device), o.data);
                         }));
                     });
                 }
@@ -231,7 +341,7 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void} ack
              */
             clientEmitGetPhoneList: function (d, ack) {
-                var arr = d.pids.map(function (pid) { return createPhoneListItem(pid, getIsPhoneOnline(pid), getPhoneClient(pid).name); });
+                var arr = d.pids.map(function (pid) { return createPhoneListItem(pid, getIsPhoneOnline(pid)); });
                 emit.serverEmitPhoneList(client, arr);
                 //----------
                 return successACK(ack);
@@ -243,10 +353,113 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void} ack
              */
             clientEmitGetGlassesList: function (d, ack) {
-                var arr = d.gids.map(function (gid) { return createGlassesListItem(gid, getIsGlassesOnline(gid), getGlassesClient(gid).name); });
+                var arr = d.gids.map(function (gid) { return createGlassesListItem(gid, getIsGlassesOnline(gid)); });
                 emit.serverEmitGlassesList(client, arr);
                 //----------
                 return successACK(ack);
+            },
+            /**
+             * 眼镜获取是否有共享屏(200003)
+             *
+             * @param {any} d
+             */
+            glassesEmitMeetingIsShare: function (d, ack) {
+                var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                if (pclient) {
+                    emit.serverEmitMeetingIsShare(pclient, {
+                        gid: gclient.gid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
+                }
+            },
+            /**
+             * 眼镜wifi信息(200005)
+             *
+             * @param {any} d
+             */
+            glassesEmitMeetingWifiInfo: function (d, ack) {
+                var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                if (pclient) {
+                    emit.serverEmitMeetingWifiInfo(pclient, {
+                        gid: gclient.gid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
+                }
+            },
+            /**
+             * 眼镜硬件信息(200006)
+             *
+             * @param {any} d
+             */
+            glassesEmitMeetingDeviceInfo: function (d, ack) {
+                var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                if (pclient) {
+                    emit.serverEmitMeetingDeviceInfo(pclient, {
+                        gid: gclient.gid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
+                }
+            },
+            /**
+             * 眼镜获取视频环境(200007)
+             *
+             * @param {any} d
+             */
+            glassesEmitMeetingGetVideoEnv: function (d, ack) {
+                var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                if (pclient) {
+                    emit.serverEmitMeetingGetVideoEnv(pclient, {
+                        gid: gclient.gid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
+                }
+            },
+            /**
+             * 眼镜获取WIFI和电量状态指令(100005)
+             *
+             * @param {any} d
+             */
+            glassesEmitLiveGetInfo: function (d, ack) {
+                var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                if (pclient) {
+                    emit.serverEmitLiveGetInfo(pclient, {
+                        gid: gclient.gid,
+                        data: d.data
+                    });
+                    return successACK(ack);
+                }
+                else {
+                    return failACK(ack, tool.stringFormat("发送消息失败,指定手机({0})不存在", d.pid));
+                }
+            },
+            /**
+             * 眼镜发送设备播放时间记录接口
+             */
+            glassesEmitAppointedTime: function (d, ack) {
+                php.AppointedTime.emit(d, function (data) {
+                    phpACK(ack, data);
+                });
             }
         };
         /** 所有服务器发出的事件集合 */
@@ -289,6 +502,116 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.serverEmitGlassesListACK>) => void} ack
              */
             serverEmitGlassesList: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机加入会议(200001)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitMeetingJoin: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机视频画面切换(200004)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitMeetingScreenSwitch: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机与眼镜设备解绑(200008)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitMeetingUnbind: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机直播推流(100001)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitLivePush: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机退出直播(100002)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitLiveExit: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 手机设置导播台模式指令(100003)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToGlassesData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+             */
+            serverEmitLiveBroadcast: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 眼镜获取是否有共享屏(200003)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToPhoneData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
+             */
+            serverEmitMeetingIsShare: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 眼镜wifi信息(200005)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToPhoneData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
+             */
+            serverEmitMeetingWifiInfo: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 眼镜硬件信息(200006)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToPhoneData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
+             */
+            serverEmitMeetingDeviceInfo: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 眼镜获取视频环境(200007)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToPhoneData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
+             */
+            serverEmitMeetingGetVideoEnv: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 眼镜获取WIFI和电量状态指令(100005)
+             *
+             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+             * @param {pg.serverEmitSendToPhoneData} d
+             * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
+             */
+            serverEmitLiveGetInfo: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             }
         };
@@ -469,11 +792,12 @@ module.exports = function (httpServer) {
      * @param {boolean} is_online 是否在线
      * @returns {pg.serverEmitPhoneListItem}
      */
-    function createPhoneListItem(pid, is_online, name) {
+    function createPhoneListItem(pid, is_online, data) {
+        if (data === void 0) { data = {}; }
         return {
             pid: pid,
             is_online: is_online,
-            name: name
+            data: data
         };
     }
     /**
@@ -483,11 +807,12 @@ module.exports = function (httpServer) {
      * @param {boolean} is_online 是否在线
      * @returns {pg.serverEmitGlassesListItem}
      */
-    function createGlassesListItem(gid, is_online, name) {
+    function createGlassesListItem(gid, is_online, data) {
+        if (data === void 0) { data = {}; }
         return {
             gid: gid,
             is_online: is_online,
-            name: name
+            data: data
         };
     }
 };

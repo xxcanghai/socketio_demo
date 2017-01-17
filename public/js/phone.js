@@ -3,7 +3,7 @@ $(function () {
     function emitLogin() {
         var data = {
             pid: vm.phoneid,
-            name: "手机"
+            data: "{}"
         };
         server.emit("phoneEmitLogin", data, function (d) {
             console.log("phoneEmitLogin事件的ACK函数返回值：", d);
@@ -48,6 +48,20 @@ $(function () {
             }
         });
     }
+    function customSendClick(e) {
+        var data = {
+            gid: vm.glassesid,
+            data: vm.customData
+        };
+        server.emit(vm.customEvent, data, function (d) {
+            // if (d.code != 0) {
+            //     alert(d.msg);
+            // } else {
+            //     alert("发送成功");
+            // }
+            alert(d.msg);
+        });
+    }
     function listen() {
         server.on("disconnect", function () {
             vm.isLogin = false;
@@ -69,13 +83,16 @@ $(function () {
         msgArr: [],
         isLogin: false,
         gids: "glasses1,glasses2,glasses3",
-        gArr: []
+        gArr: [],
+        customEvent: "phoneEmitMeetingUnbind",
+        customData: "glasses1"
     };
     var vmMethod = {
         emitLogin: emitLogin,
         emitSendToGlasses: emitSendToGlasses,
         emitGetGlassesList: emitGetGlassesList,
-        emitBindGlasses: emitBindGlasses
+        emitBindGlasses: emitBindGlasses,
+        customSendClick: customSendClick
     };
     vm = new Vue({
         el: "#phone",

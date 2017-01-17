@@ -5,7 +5,7 @@ $(function () {
     function emitLogin() {
         var data: pg.glassesEmitLoginData = {
             gid: vm.glassesid,
-            name: "眼镜"
+            data: "{}"
         };
         server.emit("glassesEmitLogin", data, function (d) {
             if (d.code != 0) {
@@ -61,6 +61,10 @@ $(function () {
         });
         server.on("serverEmitPhoneList", function (d: pg.serverEmitPhoneListData) {
             vm.pArr = d;
+        });
+        server.on("serverEmitMeetingJoin",function(d:pg.serverEmitSendToGlassesData){
+            alert(d.data);
+            console.log(d.data);
         });
     }
 

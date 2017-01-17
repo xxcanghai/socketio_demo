@@ -38,9 +38,16 @@
         <input type="button" value="获取并更新列表" @click="emitGetGlassesList">
         <div>
             <div v-for="g in gArr">
-                <span>{{g.gid}}</span>
-                <span>{{g.is_online?'在线':'离线'}}</span>
+                <span>{{g.gid}} </span>
+                <span>{{g.is_online?'在线':'离线'}} </span>
+                <span>{{g.data}} </span>
             </div>
+        </div>
+        <hr>
+        <div>
+            <div>给眼镜发送自定义事件名：<input type="text" v-model="customEvent" placeholder="事件名"></div>
+            <div>给眼镜发送自定义数据：<input type="text" v-model="customData" placeholder="自定义数据"></div>
+            <input type="button" value="发送" @click="customSendClick"><br>
         </div>
     </div>
 </body>

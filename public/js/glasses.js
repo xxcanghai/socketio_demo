@@ -3,7 +3,7 @@ $(function () {
     function emitLogin() {
         var data = {
             gid: vm.glassesid,
-            name: "眼镜"
+            data: "{}"
         };
         server.emit("glassesEmitLogin", data, function (d) {
             if (d.code != 0) {
@@ -56,6 +56,10 @@ $(function () {
         });
         server.on("serverEmitPhoneList", function (d) {
             vm.pArr = d;
+        });
+        server.on("serverEmitMeetingJoin", function (d) {
+            alert(d.data);
+            console.log(d.data);
         });
     }
     //----------

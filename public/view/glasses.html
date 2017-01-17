@@ -37,8 +37,9 @@
         <input type="button" value="获取并更新列表" @click="emitGetPhoneList">
         <div>
             <div v-for="p in pArr">
-                <span>{{p.pid}}</span>
-                <span>{{p.is_online?'在线':'离线'}}</span>
+                <span>{{p.pid}} </span>
+                <span>{{p.is_online?'在线':'离线'}} </span>
+                <span>{{p.data}} </span>
             </div>
         </div>
     </div>

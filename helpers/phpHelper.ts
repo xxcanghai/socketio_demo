@@ -10,15 +10,26 @@ var dic = {
     /** 51-设备绑定记录接口 */
     deviceBindingLog: createPhpInterface<pg.deviceBindingLogIn, pg.deviceBindingLogOut>
         ("/Api/DeviceBinding/log.html", "51-设备绑定记录接口", "POST"),
+
     /** 52-新增设备接口 */
-    Appointed: createPhpInterface<pg.AppointedIn, pg.AppointedOut>
+    AppointedAdd: createPhpInterface<pg.AppointedAddIn, pg.AppointedAddOut>
         ("/Api/Appointed/add.html", "52-新增设备接口", "POST"),
+
     /** 53-设备列表接口 */
     deviceBindingList: createPhpInterface<pg.deviceBindingListIn, pg.deviceBindingListOut>
         ("/Api/DeviceBinding/list.html", "53-设备列表接口", "POST"),
-    /** 54-设备在线时长记录接口 */
+
+    /** 54-登录或退出接口 */
     onlineTimeLength: createPhpInterface<pg.onlineTimeLengthIn, pg.onlineTimeLengthOut>
-        ("/Api/Appointed/OnlineTimeLength.html", "54-设备在线时长记录接口", "POST"),
+        ("/Api/Appointed/OnlineTimeLength.html", "54-登录或退出接口", "POST"),
+
+    /** 55-设备播放时间记录接口 */
+    AppointedTime: createPhpInterface<pg.AppointedTimeIn, pg.AppointedTimeOut>
+        ("/Api/Appointed/time.html", "55-设备播放时间记录接口", "POST"),
+
+    /** 56-解除设备绑定 */
+    unbind: createPhpInterface<pg.unbindIn, pg.unbindOut>
+        ("/Api/Del/unbind.html", "56-解除设备绑定", "POST"),
 };
 
 /**
@@ -38,7 +49,7 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
     obj.method = method;
     obj.emit = function (data: T, callback: (d: U) => void = noop): request.Request {
         type requestConfig = request.CoreOptions & request.UrlOptions;
-        
+
 
         var submitData: pg.phpInBase = {
             apiversion: "v.1.0",
@@ -58,7 +69,13 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
         /** request的回调函数 */
         function success(error: any, response: http.IncomingMessage, body: any) {
             if (error) { throw error }
-            var data: any = JSON.parse(body);
+            var data: any
+            try {
+                data = JSON.parse(body);
+            } catch (ex) {
+                //todo
+                console.error("PHP接口异常！", body);
+            }
             try {
                 if (data.data_res.code != 200) {
                     console.error("PHP接口错误！", obj.desc, "接口地址：", reqObj.url, "提交数据：", reqObj.form, "错误信息：", data.data_res.msg);
@@ -66,7 +83,7 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
             }
             catch (ex) {
             }
-            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", global.unescape(body.replace(/\\u/g,"%u")));
+            console.log(">>[phpReceive]", obj.desc, reqObj.url, reqObj.form, "返回值：", global.unescape(body.replace(/\\u/g, "%u")));
             callback.call(this, data.data_res);
         }
         console.log(">>[phpSend]", obj.desc, reqObj.url, reqObj.form);
@@ -200,13 +217,13 @@ namespace pg {
 
     export interface deviceBindingLogOut extends phpOutBase<string> { }
 
-    export interface AppointedIn {
+    export interface AppointedAddIn {
         /**
-         * 设备名称
+         * 新增接口数据
          * 
-         * @type {string}
+         * @type {*}
          */
-        name: string;
+        data: any;
 
         /**
          * 设备ID
@@ -216,7 +233,7 @@ namespace pg {
         appointed: string;
     }
 
-    export interface AppointedOut extends phpOutBase<string> { }
+    export interface AppointedAddOut extends phpOutBase<string> { }
 
     export interface deviceBindingListIn {
         /**
@@ -238,11 +255,11 @@ namespace pg {
          */
         id: string;
         /**
-         * 设备名称
+         * 服务器返回自定义数据
          * 
-         * @type {string}
+         * @type {any}
          */
-        name: string;
+        data: any;
         /**
          * 被绑定设备ID 
          * 
@@ -268,6 +285,49 @@ namespace pg {
     }
 
     export interface onlineTimeLengthOut extends phpOutBase<string> { }
+
+    export interface unbindIn {
+        /**
+         * 眼镜设备ID
+         * 
+         * @type {string}
+         */
+        appointed: string;
+    }
+
+    export interface unbindOut extends phpOutBase<string> { }
+
+    export interface AppointedTimeIn {
+        /**
+         * 眼镜设备ID
+         * 
+         * @type {string}
+         */
+        appointed: string;
+
+        /**
+         * 活动ID
+         * 
+         * @type {number}
+         */
+        aid?: number;
+
+        /**
+         * 1活动 0会议
+         * 
+         * @type {number}
+         */
+        meeting?: 0 | 1;
+
+        /**
+         * 0登录 1退出
+         * 
+         * @type {number}
+         */
+        type: 0 | 1;
+    }
+
+    export interface AppointedTimeOut extends phpOutBase<string> { }
 }
 
 export = dic;

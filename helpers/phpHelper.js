@@ -7,11 +7,15 @@ var dic = {
     /** 51-设备绑定记录接口 */
     deviceBindingLog: createPhpInterface("/Api/DeviceBinding/log.html", "51-设备绑定记录接口", "POST"),
     /** 52-新增设备接口 */
-    Appointed: createPhpInterface("/Api/Appointed/add.html", "52-新增设备接口", "POST"),
+    AppointedAdd: createPhpInterface("/Api/Appointed/add.html", "52-新增设备接口", "POST"),
     /** 53-设备列表接口 */
     deviceBindingList: createPhpInterface("/Api/DeviceBinding/list.html", "53-设备列表接口", "POST"),
-    /** 54-设备在线时长记录接口 */
-    onlineTimeLength: createPhpInterface("/Api/Appointed/OnlineTimeLength.html", "54-设备在线时长记录接口", "POST")
+    /** 54-登录或退出接口 */
+    onlineTimeLength: createPhpInterface("/Api/Appointed/OnlineTimeLength.html", "54-登录或退出接口", "POST"),
+    /** 55-设备播放时间记录接口 */
+    AppointedTime: createPhpInterface("/Api/Appointed/time.html", "55-设备播放时间记录接口", "POST"),
+    /** 56-解除设备绑定 */
+    unbind: createPhpInterface("/Api/Del/unbind.html", "56-解除设备绑定", "POST")
 };
 /**
  * 创建一个PHP接口对象
@@ -49,7 +53,14 @@ function createPhpInterface(path, desc, method) {
             if (error) {
                 throw error;
             }
-            var data = JSON.parse(body);
+            var data;
+            try {
+                data = JSON.parse(body);
+            }
+            catch (ex) {
+                //todo
+                console.error("PHP接口异常！", body);
+            }
             try {
                 if (data.data_res.code != 200) {
                     console.error("PHP接口错误！", obj.desc, "接口地址：", reqObj.url, "提交数据：", reqObj.form, "错误信息：", data.data_res.msg);

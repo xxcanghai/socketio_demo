@@ -9,13 +9,6 @@ declare namespace pg {
          * @type {"phone" | "glasses"}
          */
         type: "phone" | "glasses";
-
-        /**
-         * 当前的手机名称或眼镜名称
-         * 
-         * @type {string}
-         */
-        name:string;
     }
 
     interface phoneClient extends socketClient {
@@ -90,11 +83,11 @@ declare namespace pg {
         pid: string;
 
         /**
-         * 当前手机名称
+         * 自定义数据
          * 
-         * @type {string}
+         * @type {any}
          */
-        name: string;
+        data: any;
     }
 
     interface phoneEmitLoginACK {
@@ -140,11 +133,11 @@ declare namespace pg {
         gid: string;
 
         /**
-         * 当前眼镜名称
+         * 自定义数据
          * 
          * @type {string}
          */
-        name: string;
+        data: any;
     }
 
     interface glassesEmitLoginACK {
@@ -210,6 +203,41 @@ declare namespace pg {
 
     interface glassesEmitSendToPhoneACK {
         //无
+    }
+
+    interface glassesEmitAppointedTimeData {
+
+        /**
+         * 眼镜设备ID
+         * 
+         * @type {string}
+         */
+        appointed: string;
+
+        /**
+         * 活动ID
+         * 
+         * @type {number}
+         */
+        aid?: number;
+
+        /**
+         * 1活动 0会议
+         * 
+         * @type {number}
+         */
+        meeting?: 0 | 1;
+
+        /**
+         * 0登录 1退出
+         * 
+         * @type {number}
+         */
+        type: 0 | 1;
+    }
+
+    interface glassesEmitAppointedTimeACK {
+
     }
 
     /**
@@ -282,11 +310,12 @@ declare namespace pg {
         pid: string;
 
         /**
-         * 设备名称
+         * 自定义数据
          * 
-         * @type {string}
+         * @type {*}
+         * @memberOf serverEmitPhoneListItem
          */
-        name:string;
+        data: any;
     }
 
     interface serverEmitPhoneListACK {
@@ -325,11 +354,12 @@ declare namespace pg {
         gid: string;
 
         /**
-         * 设备名称
+         * 自定义数据
          * 
-         * @type {string}
+         * @type {*}
+         * @memberOf serverEmitGlassesListItem
          */
-        name:string;
+        data: any;
     }
 
     interface serverEmitGlassesListACK {
@@ -386,5 +416,55 @@ declare namespace pg {
 
     interface serverEmitSendToPhoneACK {
         //无
+    }
+
+    /**
+     * 通知眼镜有手机登录状态变更
+     * 
+     * @interface serverEmitPhoneLoginChangeData
+     */
+    interface serverEmitPhoneLoginChangeData {
+        /**
+         * 眼镜id
+         * 
+         * @type {string}
+         */
+        pid: string;
+
+        /**
+         * 登录状态，true上线，false离线
+         * 
+         * @type {boolean}
+         */
+        is_login: boolean;
+    }
+
+    interface serverEmitPhoneLoginedACK {
+
+    }
+
+    /**
+     * 通知手机有眼镜登录状态变更
+     * 
+     * @interface serverEmitGlassesLoginChangeData
+     */
+    interface serverEmitGlassesLoginChangeData {
+        /**
+         * 眼镜ID
+         * 
+         * @type {string}
+         */
+        gid: string;
+
+        /**
+         * 登录状态，true上线，false离线
+         * 
+         * @type {boolean}
+         */
+        is_login: boolean;
+    }
+
+    interface serverEmitGlassesLoginedACK {
+
     }
 }
