@@ -194,7 +194,7 @@ export = function (httpServer) {
             /**
              * 手机与眼镜设备解绑(200008)
              */
-            phoneEmitMeetingUnbind(d: pg.phoneEmitSendToGlassesData, ack: (ackData: pg.serverBase<pg.phoneEmitSendToGlassesACK>) => void) {
+            phoneEmitUnbind(d: pg.phoneEmitSendToGlassesData, ack: (ackData: pg.serverBase<pg.phoneEmitSendToGlassesACK>) => void) {
                 var pclient: pg.phoneClient = <pg.phoneClient>client;
                 var gclient = getGlassesClient(d.gid);
 
@@ -203,6 +203,7 @@ export = function (httpServer) {
                     phpACK(ack, d);
                 });
 
+                // 无用
                 // if (gclient) {
                 //     emit.serverEmitMeetingUnbind(gclient, {
                 //         pid: pclient.pid,
@@ -487,7 +488,7 @@ export = function (httpServer) {
             // 【手机发送事件名】
             // phoneEmitMeetingJoin, 手机加入会议(200001)
             // phoneEmitMeetingScreenSwitch, 手机视频画面切换(200004)
-            // phoneEmitMeetingUnbind, 手机与眼镜设备解绑(200008)
+            // phoneEmitUnbind, 手机与眼镜设备解绑(200008) 原名phoneEmitMeetingUnbind
             // phoneEmitLivePush, 手机直播推流(100001)
             // phoneEmitLiveExit, 手机退出直播(100002)
             // phoneEmitLiveBroadcast, 手机设置导播台模式指令(100003)
@@ -504,7 +505,7 @@ export = function (httpServer) {
             // （眼镜端监听）
             // serverEmitMeetingJoin
             // serverEmitMeetingScreenSwitch
-            // serverEmitMeetingUnbind
+            // serverEmitMeetingUnbind//无用
             // serverEmitLivePush
             // serverEmitLiveExit
             // serverEmitLiveBroadcast
@@ -574,14 +575,15 @@ export = function (httpServer) {
              */
             serverEmitMeetingScreenSwitch(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void = noop) { },
 
-            /**
-             * 手机与眼镜设备解绑(200008)
-             * 
-             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
-             * @param {pg.serverEmitSendToGlassesData} d
-             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
-             */
-            serverEmitMeetingUnbind(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void = noop) { },
+            // 无用
+            // /**
+            //  * 手机与眼镜设备解绑(200008)
+            //  * 
+            //  * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+            //  * @param {pg.serverEmitSendToGlassesData} d
+            //  * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+            //  */
+            // serverEmitMeetingUnbind(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void = noop) { },
 
             /**
              * 手机直播推流(100001)

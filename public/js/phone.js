@@ -84,7 +84,7 @@ $(function () {
         isLogin: false,
         gids: "glasses1,glasses2,glasses3",
         gArr: [],
-        customEvent: "phoneEmitMeetingUnbind",
+        customEvent: "phoneEmitUnbind",
         customData: "glasses1"
     };
     var vmMethod = {

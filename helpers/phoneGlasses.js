@@ -180,13 +180,14 @@ module.exports = function (httpServer) {
             /**
              * 手机与眼镜设备解绑(200008)
              */
-            phoneEmitMeetingUnbind: function (d, ack) {
+            phoneEmitUnbind: function (d, ack) {
                 var pclient = client;
                 var gclient = getGlassesClient(d.gid);
                 //向php服务器发送解绑消息
                 php.unbind.emit({ appointed: d.gid }, function (d) {
                     phpACK(ack, d);
                 });
+                // 无用
                 // if (gclient) {
                 //     emit.serverEmitMeetingUnbind(gclient, {
                 //         pid: pclient.pid,
@@ -524,16 +525,15 @@ module.exports = function (httpServer) {
             serverEmitMeetingScreenSwitch: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             },
-            /**
-             * 手机与眼镜设备解绑(200008)
-             *
-             * @param {SocketIO.Socket|SocketIO.Socket[]} socket
-             * @param {pg.serverEmitSendToGlassesData} d
-             * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
-             */
-            serverEmitMeetingUnbind: function (socket, d, ack) {
-                if (ack === void 0) { ack = noop; }
-            },
+            // 无用
+            // /**
+            //  * 手机与眼镜设备解绑(200008)
+            //  * 
+            //  * @param {SocketIO.Socket|SocketIO.Socket[]} socket
+            //  * @param {pg.serverEmitSendToGlassesData} d
+            //  * @param {(ackData: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void} [ack=noop]
+            //  */
+            // serverEmitMeetingUnbind(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToGlassesData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToGlassesACK>) => void = noop) { },
             /**
              * 手机直播推流(100001)
              *
