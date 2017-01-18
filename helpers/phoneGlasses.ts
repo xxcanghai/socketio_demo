@@ -406,11 +406,11 @@ export = function (httpServer) {
              * 
              * @param {any} d
              */
-            glassesEmitMeetingWifiInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
+            glassesEmitWifiInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
                 var gclient: pg.glassesClient = <pg.glassesClient>client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitMeetingWifiInfo(pclient, {
+                    emit.serverEmitWifiInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -424,11 +424,11 @@ export = function (httpServer) {
              * 
              * @param {any} d
              */
-            glassesEmitMeetingDeviceInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
+            glassesEmitDeviceInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
                 var gclient: pg.glassesClient = <pg.glassesClient>client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitMeetingDeviceInfo(pclient, {
+                    emit.serverEmitDeviceInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -460,11 +460,11 @@ export = function (httpServer) {
              * 
              * @param {any} d
              */
-            glassesEmitLiveGetInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
+            glassesEmitGetInfo(d: pg.glassesEmitSendToPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitSendToPhoneACK>) => void) {
                 var gclient: pg.glassesClient = <pg.glassesClient>client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitLiveGetInfo(pclient, {
+                    emit.serverEmitGetInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -488,17 +488,17 @@ export = function (httpServer) {
             // 【手机发送事件名】
             // phoneEmitMeetingJoin, 手机加入会议(200001)
             // phoneEmitMeetingScreenSwitch, 手机视频画面切换(200004)
-            // phoneEmitUnbind, 手机与眼镜设备解绑(200008) 原名phoneEmitMeetingUnbind
+            // phoneEmitUnbind, 手机与眼镜设备解绑(200008) 原名 phoneEmitMeetingUnbind
             // phoneEmitLivePush, 手机直播推流(100001)
             // phoneEmitLiveExit, 手机退出直播(100002)
             // phoneEmitLiveBroadcast, 手机设置导播台模式指令(100003)
 
             // 【眼镜发送事件名】
             // glassesEmitMeetingIsShare, 眼镜获取是否有共享屏(200003)
-            // glassesEmitMeetingWifiInfo, 眼镜wifi信息(200005)
-            // glassesEmitMeetingDeviceInfo, 眼镜硬件信息(200006)
+            // glassesEmitWifiInfo, 眼镜wifi信息(200005)
+            // glassesEmitDeviceInfo, 眼镜硬件信息(200006)
             // glassesEmitMeetingGetVideoEnv, 眼镜获取视频环境(200007)
-            // glassesEmitLiveGetInfo, 眼镜获取WIFI和电量状态指令(100005)
+            // glassesEmitGetInfo, 眼镜获取WIFI和电量状态指令(100005)
 
 
             // 对应服务器发送事件名：
@@ -512,10 +512,10 @@ export = function (httpServer) {
 
             // （手机端监听）
             // serverEmitMeetingIsShare
-            // serverEmitMeetingWifiInfo
-            // serverEmitMeetingDeviceInfo
+            // serverEmitWifiInfo
+            // serverEmitDeviceInfo
             // serverEmitMeetingGetVideoEnv
-            // serverEmitLiveGetInfo
+            // serverEmitGetInfo
 
         }
 
@@ -629,7 +629,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitMeetingWifiInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
+            serverEmitWifiInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
 
             /**
              * 眼镜硬件信息(200006)
@@ -638,7 +638,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitMeetingDeviceInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
+            serverEmitDeviceInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
 
             /**
              * 眼镜获取视频环境(200007)
@@ -656,7 +656,7 @@ export = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitLiveGetInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
+            serverEmitGetInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
 
             // TODO 。。。。。serverEmitPhoneLoginChangeData
         }

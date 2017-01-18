@@ -383,11 +383,11 @@ module.exports = function (httpServer) {
              *
              * @param {any} d
              */
-            glassesEmitMeetingWifiInfo: function (d, ack) {
+            glassesEmitWifiInfo: function (d, ack) {
                 var gclient = client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitMeetingWifiInfo(pclient, {
+                    emit.serverEmitWifiInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -402,11 +402,11 @@ module.exports = function (httpServer) {
              *
              * @param {any} d
              */
-            glassesEmitMeetingDeviceInfo: function (d, ack) {
+            glassesEmitDeviceInfo: function (d, ack) {
                 var gclient = client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitMeetingDeviceInfo(pclient, {
+                    emit.serverEmitDeviceInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -440,11 +440,11 @@ module.exports = function (httpServer) {
              *
              * @param {any} d
              */
-            glassesEmitLiveGetInfo: function (d, ack) {
+            glassesEmitGetInfo: function (d, ack) {
                 var gclient = client;
                 var pclient = getPhoneClient(d.pid);
                 if (pclient) {
-                    emit.serverEmitLiveGetInfo(pclient, {
+                    emit.serverEmitGetInfo(pclient, {
                         gid: gclient.gid,
                         data: d.data
                     });
@@ -581,7 +581,7 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitMeetingWifiInfo: function (socket, d, ack) {
+            serverEmitWifiInfo: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             },
             /**
@@ -591,7 +591,7 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitMeetingDeviceInfo: function (socket, d, ack) {
+            serverEmitDeviceInfo: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             },
             /**
@@ -611,7 +611,7 @@ module.exports = function (httpServer) {
              * @param {pg.serverEmitSendToPhoneData} d
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
-            serverEmitLiveGetInfo: function (socket, d, ack) {
+            serverEmitGetInfo: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             }
         };
