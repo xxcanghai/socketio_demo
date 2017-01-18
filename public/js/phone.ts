@@ -79,6 +79,10 @@ $(function () {
             console.log("服务器返回眼镜列表：", JSON.stringify(d));
             vm.gArr = d;
         });
+        server.on("serverEmitGlassesLoginChange",function(d:pg.serverEmitGlassesLoginChangeData){
+            console.log("serverEmitGlassesLoginChange",d);
+            vm.gArr.filter(g=>g.gid==d.gid)[0].is_online=d.is_login;
+        });
     }
 
 

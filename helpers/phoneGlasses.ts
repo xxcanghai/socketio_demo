@@ -40,9 +40,22 @@ export = function (httpServer) {
                         appointed: pclient.pid,
                         type: 1
                     });
+                    // 登记设备播放记录-退出
                     php.AppointedTime.emit({
                         appointed: pclient.pid,
                         type: 1
+                    });
+                    //调用PHP接口，获取当前手机关联的所有眼镜
+                    php.deviceBindingList.emit({ appointed: pclient.pid }, d => {
+                        if (d.code != 200) return;
+                        d.res.forEach(o => {
+                            // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经退出的消息
+                            var g = getGlassesClient(o.bonded_device);
+                            var isOnline = g != undefined;
+                            if (isOnline) {
+                                emit.serverEmitPhoneLoginChange(g, { is_login: false, pid: pclient.pid });
+                            }
+                        });
                     });
                 }
 
@@ -56,9 +69,22 @@ export = function (httpServer) {
                         appointed: gclient.gid,
                         type: 1
                     });
+                    // 登记设备播放记录-退出
                     php.AppointedTime.emit({
                         appointed: gclient.gid,
                         type: 1
+                    });
+                    //调用PHP接口，获取当前眼镜关联的所有手机
+                    php.deviceBindingList.emit({ appointed: gclient.gid }, d => {
+                        if (d.code != 200) return;
+                        d.res.forEach(o => {
+                            // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经退出的消息
+                            var p = getPhoneClient(o.bonded_device);
+                            var isOnline = p != undefined;
+                            if (isOnline) {
+                                emit.serverEmitGlassesLoginChange(p, { is_login: false, gid: gclient.gid });
+                            }
+                        });
                     });
                 }
             },
@@ -75,7 +101,7 @@ export = function (httpServer) {
                 var pclient: pg.phoneClient = <pg.phoneClient>client;
                 pclient.pid = d.pid;
                 pclient.type = "phone";
-                
+
                 phpAddPhone();
 
                 /** 调用PHP新增设备接口 */
@@ -105,11 +131,17 @@ export = function (httpServer) {
                 }
                 /** 获取当前手机关联的眼镜，并向当前手机发送关联的眼镜列表 */
                 function getGlassesList() {
+                    //调用PHP接口，获取当前手机关联的所有眼镜
                     php.deviceBindingList.emit({ appointed: pclient.pid }, d => {
                         if (d.code != 200) return;
                         emit.serverEmitGlassesList(pclient, d.res.map(o => {
-                            //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息***
-                            return createGlassesListItem(o.bonded_device, getIsGlassesOnline(o.bonded_device), o.data)
+                            // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经登录的消息
+                            var g = getGlassesClient(o.bonded_device);
+                            var isOnline = g != undefined;
+                            if (isOnline) {
+                                emit.serverEmitPhoneLoginChange(g, { is_login: true, pid: pclient.pid });
+                            }
+                            return createGlassesListItem(o.bonded_device, isOnline, o.data)
                         }));
                     });
                 }
@@ -199,7 +231,7 @@ export = function (httpServer) {
                 var gclient = getGlassesClient(d.gid);
 
                 //向php服务器发送解绑消息
-                php.unbind.emit({ appointed: d.gid }, function (d) {
+                php.unbind.emit({ appointed: d.gid, bonded_device: pclient.pid }, function (d) {
                     phpACK(ack, d);
                 });
 
@@ -304,11 +336,18 @@ export = function (httpServer) {
                 }
                 /** 获取当前眼镜关联的所有手机，并向当前眼镜发送关联的手机列表 */
                 function getPhoneList() {
+                    // 获取当前眼镜关联的所有手机
                     php.deviceBindingList.emit({ appointed: gclient.gid }, d => {
                         if (d.code != 200) return;
-                        emit.serverEmitPhoneList(gclient, d.res.map(o =>
-                            createPhoneListItem(o.bonded_device, getIsPhoneOnline(o.bonded_device), o.data)
-                        ));
+                        emit.serverEmitPhoneList(gclient, d.res.map(o => {
+                            // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经登录的消息
+                            var p = getPhoneClient(o.bonded_device);
+                            var isOnline = p != undefined;
+                            if (isOnline) {
+                                emit.serverEmitGlassesLoginChange(p, { is_login: true, gid: gclient.gid });
+                            }
+                            return createPhoneListItem(o.bonded_device, isOnline, o.data);
+                        }));
                     });
                 }
                 /** 登记设备在线时长 */
@@ -318,8 +357,6 @@ export = function (httpServer) {
                         type: 0
                     }, d => { });
                 }
-
-                // TODO 获取当前眼镜关联的所有手机.并向其发送当前眼镜已经登录的消息***
             },
 
             /**
@@ -658,7 +695,15 @@ export = function (httpServer) {
              */
             serverEmitGetInfo(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitSendToPhoneData, ack: (ackData?: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void = noop) { },
 
-            // TODO 。。。。。serverEmitPhoneLoginChangeData
+            /**
+             * 服务器发出，通知眼镜有手机登录状态变更
+             */
+            serverEmitPhoneLoginChange(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitPhoneLoginChangeData, ack: (ackData?: pg.serverBase<pg.serverEmitPhoneLoginChangeACK>) => void = noop) { },
+
+            /**
+             * 服务器发出，通知手机有眼镜登录状态变更
+             */
+            serverEmitGlassesLoginChange(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitGlassesLoginChangeData, ack: (ackData?: pg.serverBase<pg.serverEmitGlassesLoginChangeACK>) => void = noop) { },
         }
 
         /**

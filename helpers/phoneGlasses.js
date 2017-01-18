@@ -23,32 +23,60 @@ module.exports = function (httpServer) {
                 console.log("一个用户断开了连接");
                 //如果断开的设备是手机
                 if (client.type == "phone" && phoneClientArr.indexOf(client) >= 0) {
-                    var pclient = client;
+                    var pclient_1 = client;
                     // 从手机在线列表中删除
-                    phoneClientArr.splice(phoneClientArr.indexOf(pclient), 1);
+                    phoneClientArr.splice(phoneClientArr.indexOf(pclient_1), 1);
                     /** 登记设备在线时长-退出 */
                     php.onlineTimeLength.emit({
-                        appointed: pclient.pid,
+                        appointed: pclient_1.pid,
                         type: 1
                     });
+                    // 登记设备播放记录-退出
                     php.AppointedTime.emit({
-                        appointed: pclient.pid,
+                        appointed: pclient_1.pid,
                         type: 1
+                    });
+                    //调用PHP接口，获取当前手机关联的所有眼镜
+                    php.deviceBindingList.emit({ appointed: pclient_1.pid }, function (d) {
+                        if (d.code != 200)
+                            return;
+                        d.res.forEach(function (o) {
+                            // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经退出的消息
+                            var g = getGlassesClient(o.bonded_device);
+                            var isOnline = g != undefined;
+                            if (isOnline) {
+                                emit.serverEmitPhoneLoginChange(g, { is_login: false, pid: pclient_1.pid });
+                            }
+                        });
                     });
                 }
                 //如果断开的设备是眼镜
                 if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
-                    var gclient = client;
+                    var gclient_1 = client;
                     //从眼镜在线列表中删除
-                    glassesClientArr.splice(glassesClientArr.indexOf(gclient), 1);
+                    glassesClientArr.splice(glassesClientArr.indexOf(gclient_1), 1);
                     /** 登记设备在线时长-退出 */
                     php.onlineTimeLength.emit({
-                        appointed: gclient.gid,
+                        appointed: gclient_1.gid,
                         type: 1
                     });
+                    // 登记设备播放记录-退出
                     php.AppointedTime.emit({
-                        appointed: gclient.gid,
+                        appointed: gclient_1.gid,
                         type: 1
+                    });
+                    //调用PHP接口，获取当前眼镜关联的所有手机
+                    php.deviceBindingList.emit({ appointed: gclient_1.gid }, function (d) {
+                        if (d.code != 200)
+                            return;
+                        d.res.forEach(function (o) {
+                            // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经退出的消息
+                            var p = getPhoneClient(o.bonded_device);
+                            var isOnline = p != undefined;
+                            if (isOnline) {
+                                emit.serverEmitGlassesLoginChange(p, { is_login: false, gid: gclient_1.gid });
+                            }
+                        });
                     });
                 }
             },
@@ -92,12 +120,18 @@ module.exports = function (httpServer) {
                 }
                 /** 获取当前手机关联的眼镜，并向当前手机发送关联的眼镜列表 */
                 function getGlassesList() {
+                    //调用PHP接口，获取当前手机关联的所有眼镜
                     php.deviceBindingList.emit({ appointed: pclient.pid }, function (d) {
                         if (d.code != 200)
                             return;
                         emit.serverEmitGlassesList(pclient, d.res.map(function (o) {
-                            //TODO 调用PHP接口，获取当前眼镜关联的所有手机，并向其发送当前眼镜已经登录的消息***
-                            return createGlassesListItem(o.bonded_device, getIsGlassesOnline(o.bonded_device), o.data);
+                            // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经登录的消息
+                            var g = getGlassesClient(o.bonded_device);
+                            var isOnline = g != undefined;
+                            if (isOnline) {
+                                emit.serverEmitPhoneLoginChange(g, { is_login: true, pid: pclient.pid });
+                            }
+                            return createGlassesListItem(o.bonded_device, isOnline, o.data);
                         }));
                     });
                 }
@@ -184,7 +218,7 @@ module.exports = function (httpServer) {
                 var pclient = client;
                 var gclient = getGlassesClient(d.gid);
                 //向php服务器发送解绑消息
-                php.unbind.emit({ appointed: d.gid }, function (d) {
+                php.unbind.emit({ appointed: d.gid, bonded_device: pclient.pid }, function (d) {
                     phpACK(ack, d);
                 });
                 // 无用
@@ -284,11 +318,18 @@ module.exports = function (httpServer) {
                 }
                 /** 获取当前眼镜关联的所有手机，并向当前眼镜发送关联的手机列表 */
                 function getPhoneList() {
+                    // 获取当前眼镜关联的所有手机
                     php.deviceBindingList.emit({ appointed: gclient.gid }, function (d) {
                         if (d.code != 200)
                             return;
                         emit.serverEmitPhoneList(gclient, d.res.map(function (o) {
-                            return createPhoneListItem(o.bonded_device, getIsPhoneOnline(o.bonded_device), o.data);
+                            // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经登录的消息
+                            var p = getPhoneClient(o.bonded_device);
+                            var isOnline = p != undefined;
+                            if (isOnline) {
+                                emit.serverEmitGlassesLoginChange(p, { is_login: true, gid: gclient.gid });
+                            }
+                            return createPhoneListItem(o.bonded_device, isOnline, o.data);
                         }));
                     });
                 }
@@ -299,7 +340,6 @@ module.exports = function (httpServer) {
                         type: 0
                     }, function (d) { });
                 }
-                // TODO 获取当前眼镜关联的所有手机.并向其发送当前眼镜已经登录的消息***
             },
             /**
              * 眼镜发送消息给手机
@@ -612,6 +652,18 @@ module.exports = function (httpServer) {
              * @param {(ackData: pg.serverBase<pg.serverEmitSendToPhoneACK>) => void} ack
              */
             serverEmitGetInfo: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 服务器发出，通知眼镜有手机登录状态变更
+             */
+            serverEmitPhoneLoginChange: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 服务器发出，通知手机有眼镜登录状态变更
+             */
+            serverEmitGlassesLoginChange: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             }
         };

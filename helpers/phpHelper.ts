@@ -293,6 +293,13 @@ namespace pg {
          * @type {string}
          */
         appointed: string;
+
+        /**
+         * 被绑定设备id
+         * 
+         * @type {string}
+         */
+        bonded_device:string;
     }
 
     export interface unbindOut extends phpOutBase<string> { }

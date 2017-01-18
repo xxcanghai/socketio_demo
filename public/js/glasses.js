@@ -61,6 +61,10 @@ $(function () {
             alert(d.data);
             console.log(d.data);
         });
+        server.on("serverEmitPhoneLoginChange", function (d) {
+            console.log("serverEmitPhoneLoginChange", d);
+            vm.pArr.filter(function (p) { return p.pid == d.pid; })[0].is_online = d.is_login;
+        });
     }
     //----------
     var vm;

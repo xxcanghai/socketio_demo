@@ -66,6 +66,10 @@ $(function () {
             alert(d.data);
             console.log(d.data);
         });
+        server.on("serverEmitPhoneLoginChange",function(d:pg.serverEmitPhoneLoginChangeData){
+            console.log("serverEmitPhoneLoginChange",d);
+            vm.pArr.filter(p=>p.pid==d.pid)[0].is_online=d.is_login;
+        });
     }
 
     //----------

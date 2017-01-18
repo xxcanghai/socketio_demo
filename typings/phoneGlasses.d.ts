@@ -425,7 +425,7 @@ declare namespace pg {
      */
     interface serverEmitPhoneLoginChangeData {
         /**
-         * 眼镜id
+         * 手机ID
          * 
          * @type {string}
          */
@@ -439,8 +439,8 @@ declare namespace pg {
         is_login: boolean;
     }
 
-    interface serverEmitPhoneLoginedACK {
-
+    interface serverEmitPhoneLoginChangeACK {
+        //无
     }
 
     /**
@@ -464,7 +464,7 @@ declare namespace pg {
         is_login: boolean;
     }
 
-    interface serverEmitGlassesLoginedACK {
-
+    interface serverEmitGlassesLoginChangeACK {
+        //无
     }
 }
