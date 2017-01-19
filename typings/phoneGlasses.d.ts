@@ -275,6 +275,22 @@ declare namespace pg {
     interface clientEmitGetGlassesListACK {
         //无
     }
+
+    interface phoneEmitUnbindData {
+        /**
+         * 手机id
+         */
+        pid: string;
+
+        /**
+         * 眼镜id
+         */
+        gid: string;
+    }
+
+    interface phoneEmitUnbindACK {
+
+    }
 }
 
 /** 服务器发出的事件 */

@@ -88,8 +88,8 @@ $(function () {
         isLogin: false,
         gids: "glasses1,glasses2,glasses3",
         gArr: [],
-        customEvent: "phoneEmitUnbind",
-        customData: "glasses1"
+        customEvent: "",
+        customData: ""
     };
     var vmMethod = {
         emitLogin: emitLogin,
