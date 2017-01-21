@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>lineLog接口Demo</title>
+    <script src="../js/lib/socket.io.js"></script>
+    <script src="../js/lib/jquery-1.12.3.js"></script>
+    <script src="../js/lib/vue.js"></script>
+    <script src="../js/lib/pg.js"></script>
+    <script src="../js/lineLog.js"></script>
+</head>
+
+<body id="lineLog">
+    <h1>H5页面</h1>
+    <div>
+        活动id: <input type="text" v-model="activityId">
+        <br> 用户id： <input type="text" v-model="userId">
+        <br>
+        <input type="button" @click="emitPageOpen" value="进入页面">
+    </div>
+    <hr>
+    <div>
+        PHP接口日志：
+        <div v-for="log in logs" track-by="$index">
+            {{log}}
+        </div>
+    </div>
+</body>
+
+</html>

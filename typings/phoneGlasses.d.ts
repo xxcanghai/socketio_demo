@@ -35,6 +35,14 @@ declare namespace pg {
          */
         // pid: string;
     }
+
+    interface lineLogClient extends SocketIO.Socket{
+        /** 活动id */
+        activityId:number;
+
+        /** 用户id */
+        userId:string;
+    }
 }
 
 /** 客户端与服务器端接口通讯定义 */
@@ -291,6 +299,23 @@ declare namespace pg {
     interface phoneEmitUnbindACK {
 
     }
+
+    interface clientEmitLineLogData {
+        /**
+         * 用户id
+         */
+        userId: string;
+
+        /**
+         * 活动id
+         */
+        activityId: number;
+    }
+
+    interface clientEmitLineLogACK{
+
+    }
+
 }
 
 /** 服务器发出的事件 */

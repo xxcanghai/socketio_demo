@@ -2,8 +2,10 @@ import * as request from 'request';
 import * as http from 'http';
 import * as tool from './tool';
 import * as _ from "underscore";
+import config from './config';
 
-const HOST = "http://event.dev.weidijia.cn";
+/** PHP服务器地址 */
+const HOST = config.phpHost;
 
 
 var dic = {
@@ -30,6 +32,10 @@ var dic = {
     /** 56-解除设备绑定 */
     unbind: createPhpInterface<pg.unbindIn, pg.unbindOut>
         ("/Api/Del/unbind.html", "56-解除设备绑定", "POST"),
+
+    /** 57-在线时长记录 */
+    lineLog: createPhpInterface<pg.lineLogIn, pg.lineLogOut>
+        ("/Api/Line/log.html", "57-在线时长记录", "POST"),
 };
 
 /**
@@ -94,7 +100,7 @@ function createPhpInterface<T, U>(path: string, desc: string = "", method: "POST
 }
 
 
-namespace pg {
+declare namespace pg {
     /**
      * PHP接口对象，泛型T为接口输入提交数据，泛型U为接口返回值
      * 
@@ -299,7 +305,7 @@ namespace pg {
          * 
          * @type {string}
          */
-        bonded_device:string;
+        bonded_device: string;
     }
 
     export interface unbindOut extends phpOutBase<string> { }
@@ -335,6 +341,30 @@ namespace pg {
     }
 
     export interface AppointedTimeOut extends phpOutBase<string> { }
+
+    export interface lineLogIn {
+        /**
+         * 用户id
+         */
+        userId: string;
+
+        /**
+         * 活动id
+         */
+        activityId: number;
+
+        /**
+         * 状态 1退出 0登录
+         */
+        type: 1 | 0;
+
+        /**
+         * 时间
+         */
+        time: number;
+    }
+
+    export interface lineLogOut extends phpOutBase<string> { }
 }
 
 export = dic;

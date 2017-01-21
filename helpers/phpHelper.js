@@ -2,7 +2,9 @@
 var request = require('request');
 var tool = require('./tool');
 var _ = require("underscore");
-var HOST = "http://event.dev.weidijia.cn";
+var config_1 = require('./config');
+/** PHP服务器地址 */
+var HOST = config_1["default"].phpHost;
 var dic = {
     /** 51-设备绑定记录接口 */
     deviceBindingLog: createPhpInterface("/Api/DeviceBinding/log.html", "51-设备绑定记录接口", "POST"),
@@ -15,7 +17,9 @@ var dic = {
     /** 55-设备播放时间记录接口 */
     AppointedTime: createPhpInterface("/Api/Appointed/time.html", "55-设备播放时间记录接口", "POST"),
     /** 56-解除设备绑定 */
-    unbind: createPhpInterface("/Api/Del/unbind.html", "56-解除设备绑定", "POST")
+    unbind: createPhpInterface("/Api/Del/unbind.html", "56-解除设备绑定", "POST"),
+    /** 57-在线时长记录 */
+    lineLog: createPhpInterface("/Api/Line/log.html", "57-在线时长记录", "POST")
 };
 /**
  * 创建一个PHP接口对象

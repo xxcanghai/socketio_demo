@@ -3,6 +3,7 @@ import * as  _ from 'underscore';
 import * as tool from './tool';
 import * as request from 'request';
 import * as php from './phpHelper';
+import config from './config';
 
 export = function (httpServer) {
 
@@ -14,6 +15,9 @@ export = function (httpServer) {
 
     /** 所有眼镜socket列表 */
     var glassesClientArr: pg.socketClient[] = [];
+
+    /** 专门用于记录在线时长的客户端列表 */
+    var lineLogClinetArr: pg.lineLogClient[] = [];
 
 
     server.on("connection", function (client: pg.socketClient) {
@@ -58,9 +62,8 @@ export = function (httpServer) {
                         });
                     });
                 }
-
-                //如果断开的设备是眼镜
-                if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
+                //如果断开的设备是眼镜 
+                else if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
                     let gclient: pg.glassesClient = <pg.glassesClient>client;
                     //从眼镜在线列表中删除
                     glassesClientArr.splice(glassesClientArr.indexOf(gclient), 1);
@@ -85,6 +88,17 @@ export = function (httpServer) {
                                 emit.serverEmitGlassesLoginChange(p, { is_login: false, gid: gclient.gid });
                             }
                         });
+                    });
+                }
+                //如果是lineLog接口客户端
+                else if ((<any>client).activityId != undefined && (<any>client).userId != undefined) {
+                    let lineClient: pg.lineLogClient = <pg.lineLogClient><any>client;
+  
+                    php.lineLog.emit({
+                        activityId: lineClient.activityId,
+                        userId: lineClient.userId,
+                        time: new Date().getTime(),
+                        type: 1,
                     });
                 }
             },
@@ -385,32 +399,6 @@ export = function (httpServer) {
             },
 
             /**
-             * 客户端要获取指定手机ID数组的手机对象列表
-             * 
-             * @param {pg.clientEmitGetPhoneListData} d
-             * @param {(ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void} ack
-             */
-            clientEmitGetPhoneList(d: pg.clientEmitGetPhoneListData, ack: (ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void) {
-                var arr: pg.serverEmitPhoneListData = d.pids.map(pid => createPhoneListItem(pid, getIsPhoneOnline(pid)));
-                emit.serverEmitPhoneList(client, arr);
-                //----------
-                return successACK(ack);
-            },
-
-            /**
-             * 客户端要获取指定眼镜ID数组的眼镜对象列表
-             * 
-             * @param {pg.clientEmitGetGlassesListData} d
-             * @param {(ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void} ack
-             */
-            clientEmitGetGlassesList(d: pg.clientEmitGetGlassesListData, ack: (ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void) {
-                var arr: pg.serverEmitGlassesListData = d.gids.map(gid => createGlassesListItem(gid, getIsGlassesOnline(gid)));
-                emit.serverEmitGlassesList(client, arr);
-                //----------
-                return successACK(ack);
-            },
-
-            /**
              * 眼镜获取是否有共享屏(200003)
              * 
              * @param {any} d
@@ -511,6 +499,53 @@ export = function (httpServer) {
             },
 
 
+            //--------------公共事件--------------
+
+            /**
+             * 客户端要获取指定手机ID数组的手机对象列表
+             * 
+             * @param {pg.clientEmitGetPhoneListData} d
+             * @param {(ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void} ack
+             */
+            clientEmitGetPhoneList(d: pg.clientEmitGetPhoneListData, ack: (ackData: pg.serverBase<pg.clientEmitGetPhoneListACK>) => void) {
+                var arr: pg.serverEmitPhoneListData = d.pids.map(pid => createPhoneListItem(pid, getIsPhoneOnline(pid)));
+                emit.serverEmitPhoneList(client, arr);
+                //----------
+                return successACK(ack);
+            },
+
+            /**
+             * 客户端要获取指定眼镜ID数组的眼镜对象列表
+             * 
+             * @param {pg.clientEmitGetGlassesListData} d
+             * @param {(ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void} ack
+             */
+            clientEmitGetGlassesList(d: pg.clientEmitGetGlassesListData, ack: (ackData: pg.serverBase<pg.clientEmitGetGlassesListACK>) => void) {
+                var arr: pg.serverEmitGlassesListData = d.gids.map(gid => createGlassesListItem(gid, getIsGlassesOnline(gid)));
+                emit.serverEmitGlassesList(client, arr);
+                //----------
+                return successACK(ack);
+            },
+            /**
+             * 客户端发送在线时长记录（已进入/打开时直接调用）
+             * 
+             * @param  {pg.clientEmitLineLogData} d
+             * @param  {(ackData:pg.serverBase<pg.clientEmitLineLogACK>)=>void} ack
+             */
+            clientEmitLineLog(d: pg.clientEmitLineLogData, ack: (ackData: pg.serverBase<pg.clientEmitLineLogACK>) => void) {
+                var lineClient: pg.lineLogClient = <pg.lineLogClient><any>client;
+                lineClient.activityId = d.activityId;
+                lineClient.userId = d.userId;
+
+                php.lineLog.emit({
+                    activityId: d.activityId,
+                    userId: d.userId,
+                    time: new Date().getTime(),
+                    type: 0,
+                }, data => {
+                    phpACK(ack, data);
+                });
+            }
 
             // 【手机发送事件名】
             // phoneEmitMeetingJoin, 手机加入会议(200001)
