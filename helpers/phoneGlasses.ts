@@ -93,7 +93,7 @@ export = function (httpServer) {
                 //如果是lineLog接口客户端
                 else if ((<any>client).activityId != undefined && (<any>client).userId != undefined) {
                     let lineClient: pg.lineLogClient = <pg.lineLogClient><any>client;
-  
+
                     php.lineLog.emit({
                         activityId: lineClient.activityId,
                         userId: lineClient.userId,
@@ -247,6 +247,7 @@ export = function (httpServer) {
                 //向php服务器发送解绑消息
                 php.unbind.emit({ appointed: d.gid, bonded_device: d.pid }, function (d) {
                     phpACK(ack, d);
+                    emit.serverEmitSendToGlassesUnbind(gclient, d);
                 });
             },
 
@@ -718,6 +719,11 @@ export = function (httpServer) {
              * 服务器发出，通知手机有眼镜登录状态变更
              */
             serverEmitGlassesLoginChange(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitGlassesLoginChangeData, ack: (ackData?: pg.serverBase<pg.serverEmitGlassesLoginChangeACK>) => void = noop) { },
+
+            /**
+             * 服务器发出，通知眼镜当前被解绑
+             */
+            serverEmitSendToGlassesUnbind(socket: SocketIO.Socket | SocketIO.Socket[], d: any, ack: (ackData?: any) => void = noop) { },
         }
 
         /**

@@ -230,6 +230,7 @@ module.exports = function (httpServer) {
                 //向php服务器发送解绑消息
                 php.unbind.emit({ appointed: d.gid, bonded_device: d.pid }, function (d) {
                     phpACK(ack, d);
+                    emit.serverEmitSendToGlassesUnbind(gclient, d);
                 });
             },
             /**
@@ -676,6 +677,12 @@ module.exports = function (httpServer) {
              * 服务器发出，通知手机有眼镜登录状态变更
              */
             serverEmitGlassesLoginChange: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 服务器发出，通知眼镜当前被解绑
+             */
+            serverEmitSendToGlassesUnbind: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             }
         };
