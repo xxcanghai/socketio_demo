@@ -284,6 +284,9 @@ declare namespace pg {
         //无
     }
 
+    /**
+     * 手机与眼镜设备解绑(200008)提交的实体
+     */
     interface phoneEmitUnbindData {
         /**
          * 手机id
@@ -300,6 +303,9 @@ declare namespace pg {
 
     }
 
+    /**
+     * 客户端发送在线时长记录提交实体
+     */
     interface clientEmitLineLogData {
         /**
          * 用户id
