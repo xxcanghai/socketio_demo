@@ -36,12 +36,12 @@ declare namespace pg {
         // pid: string;
     }
 
-    interface lineLogClient extends SocketIO.Socket{
+    interface lineLogClient extends SocketIO.Socket {
         /** 活动id */
-        activityId:number;
+        activityId: number;
 
         /** 用户id */
-        userId:string;
+        userId: string;
     }
 }
 
@@ -312,7 +312,7 @@ declare namespace pg {
         activityId: number;
     }
 
-    interface clientEmitLineLogACK{
+    interface clientEmitLineLogACK {
 
     }
 
@@ -506,6 +506,38 @@ declare namespace pg {
     }
 
     interface serverEmitGlassesLoginChangeACK {
+        //无
+    }
+
+    /**
+     * 服务器发出，通知手机已被绑定
+     */
+    interface serverEmitPhoneBindedData {
+        /**
+         * 当前手机被哪个眼镜id绑定
+         * 
+         * @type {string}
+         */
+        gid: string;
+    }
+
+    interface serverEmitPhoneBindedACK {
+        //无
+    }
+
+    /**
+     * 通知眼镜已被绑定
+     */
+    interface serverEmitGlassesBindedData {
+        /**
+         * 当前眼镜是被哪个眼镜id绑定
+         * 
+         * @type {string}
+         */
+        pid: string;
+    }
+
+    interface serverEmitGlassesBindedACK {
         //无
     }
 }

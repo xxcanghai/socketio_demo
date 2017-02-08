@@ -62,13 +62,16 @@ $(function () {
         server.on("serverEmitPhoneList", function (d: pg.serverEmitPhoneListData) {
             vm.pArr = d;
         });
-        server.on("serverEmitMeetingJoin",function(d:pg.serverEmitSendToGlassesData){
+        server.on("serverEmitMeetingJoin", function (d: pg.serverEmitSendToGlassesData) {
             alert(d.data);
             console.log(d.data);
         });
-        server.on("serverEmitPhoneLoginChange",function(d:pg.serverEmitPhoneLoginChangeData){
-            console.log("serverEmitPhoneLoginChange",d);
-            vm.pArr.filter(p=>p.pid==d.pid)[0].is_online=d.is_login;
+        server.on("serverEmitPhoneLoginChange", function (d: pg.serverEmitPhoneLoginChangeData) {
+            console.log("serverEmitPhoneLoginChange", d);
+            vm.pArr.filter(p => p.pid == d.pid)[0].is_online = d.is_login;
+        });
+        server.on("serverEmitGlassesBinded", function (d: pg.serverEmitGlassesBindedData) {
+            console.log("serverEmitGlassesBinded", "当前眼镜已被手机ID：<", d.pid, ">所绑定");
         });
     }
 

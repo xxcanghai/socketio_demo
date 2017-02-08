@@ -83,6 +83,10 @@ $(function () {
             console.log("serverEmitGlassesLoginChange",d);
             vm.gArr.filter(g=>g.gid==d.gid)[0].is_online=d.is_login;
         });
+
+        server.on("serverEmitPhoneBinded", function (d: pg.serverEmitPhoneBindedData) {
+            console.log("serverEmitPhoneBinded", "当前手机已被眼镜ID：<", d.gid, ">所绑定");
+        });
     }
 
 

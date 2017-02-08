@@ -195,11 +195,20 @@ export = function (httpServer) {
              */
             phoneEmitBindGlasses(d: pg.phoneEmitBindGlassesData, ack: (ackData: pg.serverBase<pg.phoneEmitBindGlassesACK>) => void) {
                 var pclient: pg.phoneClient = <pg.phoneClient>client;
+                var gclient: pg.glassesClient = getGlassesClient(d.gid);
+
+                //调用PHP绑定设备记录接口
                 php.deviceBindingLog.emit({
                     appointed: pclient.pid,
                     bonded_device: d.gid
                 }, function (d) {
                     phpACK(ack, d);
+                    //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
+                    if (d.code == 200 && gclient != undefined) {
+                        emit.serverEmitGlassesBinded(gclient, {
+                            pid: pclient.pid
+                        });
+                    }
                 });
             },
 
@@ -391,11 +400,20 @@ export = function (httpServer) {
              */
             glassesEmitBindPhone(d: pg.glassesEmitBindPhoneData, ack: (ackData: pg.serverBase<pg.glassesEmitBindPhoneACK>) => void) {
                 var gclient: pg.glassesClient = <pg.glassesClient>client;
+                var pclient: pg.phoneClient = getPhoneClient(d.pid);
+
+                //调用PHP绑定设备记录接口
                 php.deviceBindingLog.emit({
                     appointed: gclient.gid,
                     bonded_device: d.pid
                 }, function (d) {
                     phpACK(ack, d);
+                    //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
+                    if (d.code == 200 && pclient != undefined) {
+                        emit.serverEmitPhoneBinded(pclient, {
+                            gid: gclient.gid
+                        });
+                    }
                 });
             },
 
@@ -724,6 +742,16 @@ export = function (httpServer) {
              * 服务器发出，通知眼镜当前被解绑
              */
             serverEmitSendToGlassesUnbind(socket: SocketIO.Socket | SocketIO.Socket[], d: any, ack: (ackData?: any) => void = noop) { },
+
+            /**
+             * 服务器发出，通知手机已被绑定
+             */
+            serverEmitPhoneBinded(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitPhoneBindedData, ack: (ackData?: pg.serverBase<pg.serverEmitPhoneBindedACK>) => void = noop) { },
+
+            /**
+             * 服务器发出，通知眼镜已被绑定
+             */
+            serverEmitGlassesBinded(socket: SocketIO.Socket | SocketIO.Socket[], d: pg.serverEmitGlassesBindedData, ack: (ackData?: pg.serverBase<pg.serverEmitGlassesBindedACK>) => void = noop) { },
         }
 
         /**

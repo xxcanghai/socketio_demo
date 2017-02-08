@@ -180,11 +180,19 @@ module.exports = function (httpServer) {
              */
             phoneEmitBindGlasses: function (d, ack) {
                 var pclient = client;
+                var gclient = getGlassesClient(d.gid);
+                //调用PHP绑定设备记录接口
                 php.deviceBindingLog.emit({
                     appointed: pclient.pid,
                     bonded_device: d.gid
                 }, function (d) {
                     phpACK(ack, d);
+                    //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
+                    if (d.code == 200 && gclient != undefined) {
+                        emit.serverEmitGlassesBinded(gclient, {
+                            pid: pclient.pid
+                        });
+                    }
                 });
             },
             /**
@@ -370,11 +378,19 @@ module.exports = function (httpServer) {
              */
             glassesEmitBindPhone: function (d, ack) {
                 var gclient = client;
+                var pclient = getPhoneClient(d.pid);
+                //调用PHP绑定设备记录接口
                 php.deviceBindingLog.emit({
                     appointed: gclient.gid,
                     bonded_device: d.pid
                 }, function (d) {
                     phpACK(ack, d);
+                    //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
+                    if (d.code == 200 && pclient != undefined) {
+                        emit.serverEmitPhoneBinded(pclient, {
+                            gid: gclient.gid
+                        });
+                    }
                 });
             },
             /**
@@ -683,6 +699,18 @@ module.exports = function (httpServer) {
              * 服务器发出，通知眼镜当前被解绑
              */
             serverEmitSendToGlassesUnbind: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 服务器发出，通知手机已被绑定
+             */
+            serverEmitPhoneBinded: function (socket, d, ack) {
+                if (ack === void 0) { ack = noop; }
+            },
+            /**
+             * 服务器发出，通知眼镜已被绑定
+             */
+            serverEmitGlassesBinded: function (socket, d, ack) {
                 if (ack === void 0) { ack = noop; }
             }
         };
