@@ -138,6 +138,7 @@ export = function (httpServer) {
                         phoneClientArr.push(pclient);
                         getGlassesList();
                         registerOnlineTimeLength();
+                        AppointedTimeStart();
                         return successACK(ack);
                     } else {
                         return failACK(ack, tool.stringFormat("登录失败,手机ID({0})已存在", d.pid));
@@ -165,6 +166,13 @@ export = function (httpServer) {
                         appointed: pclient.pid,
                         type: 0
                     }, d => { });
+                }
+                /** 登记设备播放记录-开始 */
+                function AppointedTimeStart() {
+                    php.AppointedTime.emit({
+                        appointed: pclient.pid,
+                        type: 0
+                    });
                 }
             },
 
@@ -343,6 +351,7 @@ export = function (httpServer) {
                         glassesClientArr.push(gclient);
                         getPhoneList();
                         registerOnlineTimeLength();
+                        AppointedTimeStart();
                         return successACK(ack);
                     } else {
                         return failACK(ack, tool.stringFormat("登录失败,眼镜ID({0})已存在", d.gid));
@@ -370,6 +379,13 @@ export = function (httpServer) {
                         appointed: gclient.gid,
                         type: 0
                     }, d => { });
+                }
+                /** 登记设备播放记录-开始 */
+                function AppointedTimeStart() {
+                    php.AppointedTime.emit({
+                        appointed: gclient.gid,
+                        type: 0
+                    });
                 }
             },
 

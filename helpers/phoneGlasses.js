@@ -122,6 +122,7 @@ module.exports = function (httpServer) {
                         phoneClientArr.push(pclient);
                         getGlassesList();
                         registerOnlineTimeLength();
+                        AppointedTimeStart();
                         return successACK(ack);
                     }
                     else {
@@ -151,6 +152,13 @@ module.exports = function (httpServer) {
                         appointed: pclient.pid,
                         type: 0
                     }, function (d) { });
+                }
+                /** 登记设备播放记录-开始 */
+                function AppointedTimeStart() {
+                    php.AppointedTime.emit({
+                        appointed: pclient.pid,
+                        type: 0
+                    });
                 }
             },
             /**
@@ -320,6 +328,7 @@ module.exports = function (httpServer) {
                         glassesClientArr.push(gclient);
                         getPhoneList();
                         registerOnlineTimeLength();
+                        AppointedTimeStart();
                         return successACK(ack);
                     }
                     else {
@@ -349,6 +358,13 @@ module.exports = function (httpServer) {
                         appointed: gclient.gid,
                         type: 0
                     }, function (d) { });
+                }
+                /** 登记设备播放记录-开始 */
+                function AppointedTimeStart() {
+                    php.AppointedTime.emit({
+                        appointed: gclient.gid,
+                        type: 0
+                    });
                 }
             },
             /**
