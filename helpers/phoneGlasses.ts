@@ -54,7 +54,7 @@ export = function (httpServer) {
                         if (d.code != 200) return;
                         d.res.forEach(o => {
                             // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经退出的消息
-                            var g = getGlassesClient(o.bonded_device);
+                            var g = getGlassesClient(o.appointed);
                             var isOnline = g != undefined;
                             if (isOnline) {
                                 emit.serverEmitPhoneLoginChange(g, { is_login: false, pid: pclient.pid });
@@ -82,7 +82,7 @@ export = function (httpServer) {
                         if (d.code != 200) return;
                         d.res.forEach(o => {
                             // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经退出的消息
-                            var p = getPhoneClient(o.bonded_device);
+                            var p = getPhoneClient(o.appointed);
                             var isOnline = p != undefined;
                             if (isOnline) {
                                 emit.serverEmitGlassesLoginChange(p, { is_login: false, gid: gclient.gid });
@@ -151,12 +151,12 @@ export = function (httpServer) {
                         if (d.code != 200) return;
                         emit.serverEmitGlassesList(pclient, d.res.map(o => {
                             // 遍历眼镜列表，若眼镜在线则向其发送当前关联手机已经登录的消息
-                            var g = getGlassesClient(o.bonded_device);
+                            var g = getGlassesClient(o.appointed);
                             var isOnline = g != undefined;
                             if (isOnline) {
                                 emit.serverEmitPhoneLoginChange(g, { is_login: true, pid: pclient.pid });
                             }
-                            return createGlassesListItem(o.bonded_device, isOnline, o.data)
+                            return createGlassesListItem(o.appointed, isOnline, o.data)
                         }));
                     });
                 }
@@ -364,12 +364,12 @@ export = function (httpServer) {
                         if (d.code != 200) return;
                         emit.serverEmitPhoneList(gclient, d.res.map(o => {
                             // 遍历手机列表，若手机在线则向其发送当前关联眼镜已经登录的消息
-                            var p = getPhoneClient(o.bonded_device);
+                            var p = getPhoneClient(o.appointed);
                             var isOnline = p != undefined;
                             if (isOnline) {
                                 emit.serverEmitGlassesLoginChange(p, { is_login: true, gid: gclient.gid });
                             }
-                            return createPhoneListItem(o.bonded_device, isOnline, o.data);
+                            return createPhoneListItem(o.appointed, isOnline, o.data);
                         }));
                     });
                 }

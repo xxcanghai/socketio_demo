@@ -271,7 +271,7 @@ declare namespace pg {
          * 
          * @type {string}
          */
-        bonded_device: string;
+        appointed: string;
     }
 
     export interface onlineTimeLengthIn {
