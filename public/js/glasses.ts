@@ -52,6 +52,16 @@ $(function () {
         });
     }
 
+    function emitGetInfo() {
+        var data: pg.glassesEmitSendToPhoneData = {
+            data: "哈哈哈哈",
+            pid: "phone1"
+        };
+        server.emit("glassesEmitGetInfo", data, d => {
+            console.log("glassesEmitGetInfo", d);
+        });
+    }
+
     function listen() {
         server.on("disconnect", function () {
             vm.isLogin = false;
@@ -90,7 +100,8 @@ $(function () {
         emitLogin: emitLogin,
         emitSendToPhone: emitSendToPhone,
         emitGetPhoneList: emitGetPhoneList,
-        emitBindPhone: emitBindPhone
+        emitBindPhone: emitBindPhone,
+        emitGetInfo: emitGetInfo,
     };
     vm = <any>new Vue({
         el: "#glasses",

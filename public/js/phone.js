@@ -80,6 +80,9 @@ $(function () {
         server.on("serverEmitPhoneBinded", function (d) {
             console.log("serverEmitPhoneBinded", "当前手机已被眼镜ID：<", d.gid, ">所绑定");
         });
+        server.on("serverEmitGetInfo", function (d) {
+            console.log("serverEmitGetInfo", d);
+        });
     }
     //----------
     var vm;

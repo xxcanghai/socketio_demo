@@ -196,7 +196,7 @@ module.exports = function (httpServer) {
                 }, function (d) {
                     phpACK(ack, d);
                     //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
-                    if (d.code == 200 && gclient != undefined) {
+                    if ((d.code == 200 || d.code == 608) && gclient != undefined) {
                         emit.serverEmitGlassesBinded(gclient, {
                             pid: pclient.pid
                         });
@@ -401,8 +401,8 @@ module.exports = function (httpServer) {
                     bonded_device: d.pid
                 }, function (d) {
                     phpACK(ack, d);
-                    //若php接口返回绑定成功，且被绑定设备在线，则发送已被绑定消息
-                    if (d.code == 200 && pclient != undefined) {
+                    //若php接口返回绑定成功或返回已绑定，且被绑定设备在线，则发送已被绑定消息
+                    if ((d.code == 200 || d.code == 608) && pclient != undefined) {
                         emit.serverEmitPhoneBinded(pclient, {
                             gid: gclient.gid
                         });
