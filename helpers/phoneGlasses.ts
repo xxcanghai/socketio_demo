@@ -37,6 +37,7 @@ export = function (httpServer) {
                 //如果断开的设备是手机
                 if (client.type == "phone" && phoneClientArr.indexOf(client) >= 0) {
                     let pclient: pg.phoneClient = <pg.phoneClient>client;
+                    console.log("手机断开连接！", pclient.pid);
                     // 从手机在线列表中删除
                     phoneClientArr.splice(phoneClientArr.indexOf(pclient), 1);
                     /** 登记设备在线时长-退出 */
@@ -65,6 +66,7 @@ export = function (httpServer) {
                 //如果断开的设备是眼镜 
                 else if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
                     let gclient: pg.glassesClient = <pg.glassesClient>client;
+                    console.log("眼镜断开连接！", gclient.gid);
                     //从眼镜在线列表中删除
                     glassesClientArr.splice(glassesClientArr.indexOf(gclient), 1);
                     /** 登记设备在线时长-退出 */
@@ -93,6 +95,7 @@ export = function (httpServer) {
                 //如果是lineLog接口客户端
                 else if ((<any>client).activityId != undefined && (<any>client).userId != undefined) {
                     let lineClient: pg.lineLogClient = <pg.lineLogClient><any>client;
+                    console.log("lineLog日志客户端断开连接！");
 
                     php.lineLog.emit({
                         activityId: lineClient.activityId,

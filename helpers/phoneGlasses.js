@@ -26,6 +26,7 @@ module.exports = function (httpServer) {
                 //如果断开的设备是手机
                 if (client.type == "phone" && phoneClientArr.indexOf(client) >= 0) {
                     var pclient_1 = client;
+                    console.log("手机断开连接！", pclient_1.pid);
                     // 从手机在线列表中删除
                     phoneClientArr.splice(phoneClientArr.indexOf(pclient_1), 1);
                     /** 登记设备在线时长-退出 */
@@ -54,6 +55,7 @@ module.exports = function (httpServer) {
                 }
                 else if (client.type == "glasses" && glassesClientArr.indexOf(client) >= 0) {
                     var gclient_1 = client;
+                    console.log("眼镜断开连接！", gclient_1.gid);
                     //从眼镜在线列表中删除
                     glassesClientArr.splice(glassesClientArr.indexOf(gclient_1), 1);
                     /** 登记设备在线时长-退出 */
@@ -82,6 +84,7 @@ module.exports = function (httpServer) {
                 }
                 else if (client.activityId != undefined && client.userId != undefined) {
                     var lineClient = client;
+                    console.log("lineLog日志客户端断开连接！");
                     php.lineLog.emit({
                         activityId: lineClient.activityId,
                         userId: lineClient.userId,
