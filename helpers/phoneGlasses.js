@@ -823,6 +823,7 @@ module.exports = function (httpServer) {
                     var phone = s;
                     var glasses = s;
                     console.info.apply(console, [">>[emit-" + event + "-to]"].concat([
+                        c.type,
                         c.type == "phone" ? phone.pid : c.type == "glasses" ? glasses.gid : "<unknown>"
                     ]));
                 }

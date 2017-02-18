@@ -857,6 +857,7 @@ export = function (httpServer) {
                     var phone: pg.phoneClient = <pg.phoneClient>s;
                     var glasses: pg.glassesClient = <pg.glassesClient>s;
                     console.info.apply(console, [">>[emit-" + event + "-to]"].concat([
+                        c.type,
                         c.type == "phone" ? phone.pid : c.type == "glasses" ? glasses.gid : "<unknown>"
                     ]));
                 }
