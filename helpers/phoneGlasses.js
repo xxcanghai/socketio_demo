@@ -806,10 +806,22 @@ module.exports = function (httpServer) {
                 console.info.apply(console, [">>[emit-" + event + "]"].concat(logArgs));
                 //-------
                 if (socket instanceof Array) {
-                    socket.forEach(function (s) { return s.emit(event, d, ack); });
+                    socket.forEach(function (s) {
+                        s.emit(event, d, ack);
+                        logSendTo(s);
+                    });
                 }
                 else {
                     socket.emit(event, d, ack);
+                    logSendTo(socket);
+                }
+                function logSendTo(s) {
+                    var c = s;
+                    var phone = s;
+                    var glasses = s;
+                    console.info.apply(console, [">>[emit-" + event + "-to]"].concat([
+                        c.type == "phone" ? phone.pid : c.type == "glasses" ? glasses.gid : "<unknown>"
+                    ]));
                 }
             };
         });

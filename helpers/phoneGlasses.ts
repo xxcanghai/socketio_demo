@@ -841,9 +841,21 @@ export = function (httpServer) {
                 console.info.apply(console, [">>[emit-" + event + "]"].concat(logArgs));
                 //-------
                 if (socket instanceof Array) {
-                    socket.forEach(s => s.emit(event, d, ack));
+                    socket.forEach(s => {
+                        s.emit(event, d, ack);
+                        logSendTo(s);
+                    });
                 } else {
                     socket.emit(event, d, ack);
+                    logSendTo(socket);
+                }
+                function logSendTo(s: SocketIO.Socket) {
+                    var c: pg.socketClient = <pg.socketClient>s;
+                    var phone: pg.phoneClient = <pg.phoneClient>s;
+                    var glasses: pg.glassesClient = <pg.glassesClient>s;
+                    console.info.apply(console, [">>[emit-" + event + "-to]"].concat([
+                        c.type == "phone" ? phone.pid : c.type == "glasses" ? glasses.gid : "<unknown>"
+                    ]));
                 }
             }
         });
