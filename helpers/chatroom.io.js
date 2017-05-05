@@ -1,5 +1,5 @@
 "use strict";
-var socketio = require('socket.io');
+var socketio = require("socket.io");
 module.exports = function chatroomio(httpServer) {
     //创建服务器
     var server = socketio(httpServer);

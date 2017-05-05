@@ -1,6 +1,6 @@
 "use strict";
-var express = require('express');
-var path = require('path');
+var express = require("express");
+var path = require("path");
 var enrouten = require('express-enrouten');
 var app = express();
 // var server: http.Server = http.createServer(app);

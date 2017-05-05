@@ -1,10 +1,10 @@
 $(function () {
     /** 服务器地址 */
-    var serverUrl = "http://192.168.0.106:3000";
+    var serverUrl = "http://localhost:3000";
     var server = io(serverUrl, {});
     //要发送的数据
     var sendData = new Date().getTime();
-    //发给服务器
+    //将数据发给服务器
     server.emit("clientMessage", sendData);
     console.log("向服务器发送:", sendData);
     //监听服务发来的数据
